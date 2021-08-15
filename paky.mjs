@@ -6,6 +6,8 @@ import minimist from 'minimist'
 import { createRequire } from 'module'
 import url from 'url'
 import execa from 'execa'
+import EventEmitter from "eventemitter3";
+import chalk from "chalk";
 
 export const argv = minimist(process.argv.slice(2))
 
@@ -38,42 +40,101 @@ async function loadPackageJson(__dirname) {
 	return {};
 }
 
-function createConfigure(__dirname) {
-	const defaultConfigureBuilder = async () => {
-	};
-	let configureBuilder = defaultConfigureBuilder;
-
+function createPlugin(projectObject) {
+	let pluginBuilder = null;
 
 	return {
-		configure: function (cb) {
-			configureBuilder = cb;
+		plugin: function (cb) {
+			pluginBuilder = cb;
 		},
 		controller: {
 			async run() {
-				if (configureBuilder === null) {
+				if (pluginBuilder === null) {
 					throw new Error('you should provide a callback in configure() function.')
 				}
 
-				const buildDep = async function (dependency, type = 'dev') {
-					log('Loading builddep', dependency);
-
-					await execa(
-						'npm',
-						['install', dependency, type == 'dev' ? '--save-dev' : '--save'],
-						{ preferLocal: true }
-					).stdout.pipe(process.stdout);
-				};
-
-				await configureBuilder({
-					buildDep
+				await pluginBuilder({
+					project: projectObject
 				})
 			}
 		}
 	}
 }
 
-function createProject(__dirname) {
+async function loadPlugin(pluginPath, projectObject) {
 
+	let __filename = resolve(pluginPath)
+	let __dirname = dirname(pluginPath)
+	let require = createRequire(pluginPath)
+
+	let { prepare, controller: prepareController } = createPrepare(projectObject);
+	let { plugin, controller: pluginController } = createPlugin(projectObject);
+
+	Object.assign(global, {
+		__filename,
+		__dirname,
+		require,
+		prepare,
+		plugin,
+		log,
+		chalk
+	});
+
+	await import(url.pathToFileURL(pluginPath));
+
+	await prepareController.run()
+	await pluginController.run()
+
+}
+
+function createPrepare(projectObject) {
+	const __dirname = projectObject.__dirname;
+	const defaultPrepareBuilder = async () => {
+	};
+	let prepareBuilder = defaultPrepareBuilder;
+
+	return {
+		prepare: function (cb) {
+			prepareBuilder = cb;
+		},
+		controller: {
+			async run() {
+				if (prepareBuilder === null) {
+					throw new Error('you should provide a callback in configure() function.')
+				}
+
+				const projectDep = async function (dependency, type = 'dev') {
+					log('Loading project dependency', dependency);
+
+					const call = execa(
+						'npm',
+						['install', dependency, type == 'dev' ? '--save-dev' : '--save'],
+						{ preferLocal: true }
+					);
+					call.stdout.pipe(process.stdout);
+
+					await call;
+				};
+
+				const plugin = async (path) => {
+					// TODO support more
+					const pluginPath = resolve(__dirname, path)
+
+					log('load plugin', pluginPath);
+					await loadPlugin(pluginPath, projectObject)
+				};
+
+				await prepareBuilder({
+					projectDep,
+					plugin
+				})
+			}
+		}
+	}
+}
+
+function createProject(projectObject) {
+	const __dirname = projectObject.__dirname;
 	const defaultProjectBuilder = async () => {
 	};
 	let projectBuilder = defaultProjectBuilder;
@@ -138,7 +199,7 @@ function createProject(__dirname) {
 				}
 
 				await projectBuilder({
-					pkg, dep, devDep, script
+					pkg, dep, devDep, script, log
 				});
 
 				return { pkg, scriptRegistry };
@@ -169,26 +230,48 @@ async function npmInstall(__dirname) {
 	}).stdout.pipe(process.stdout);
 }
 
+function createProjectObject(__dirname) {
+	const events = new EventEmitter()
+	return {
+		__dirname,
+		on(eventName, cb) {
+			log(chalk.blue('Adding event listener to project'), eventName)
+			events.on(eventName, cb)
+		},
+		emit(eventName, payload) {
+			log(chalk.blue('Emitting event on project'), eventName)
+			events.emit(eventName, payload)
+		}
+	};
+}
+
 async function importPath(filepath, origin = filepath) {
 	let __filename = resolve(origin)
 	let __dirname = dirname(__filename)
 	let require = createRequire(origin)
 
-	let { configure, controller: configureController } = createConfigure(__dirname);
-	let { project, controller: projectController } = createProject(__dirname);
+	const projectObject = createProjectObject(__dirname)
+
+	let { prepare, controller: configureController } = createPrepare(projectObject);
+	let { project, controller: projectController } = createProject(projectObject);
 
 	Object.assign(global, {
 		__filename,
 		__dirname,
 		require,
-		configure,
-		project
+		prepare,
+		project,
+		log,
+		chalk
 	});
 
 	await import(url.pathToFileURL(filepath))
 
 	await initPackageJson(__dirname)
 	await configureController.run();
+
+	await projectObject.emit('before:load');
+
 	const { pkg, scriptRegistry } = await projectController.run();
 
 	await updatePackageJson(pkg, __dirname);
