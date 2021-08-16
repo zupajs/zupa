@@ -1,19 +1,25 @@
-prepare(({ projectDep }) => {
-	projectDep('check-engines')
+
+prepare(async ({ projectDep, plugin }) => {
+	projectDep('check-engines@1.5.0')
+
+	await plugin('./sub-plugin.mjs')
 })
 
-plugin( async ({ project }) => {
+define(({ project }) => {
 
-	project.on('before:load', async () => {
+	project.on('prepare:after', async () => {
 		const checkEngines = require('check-engines');
 
 		await new Promise((res, rej) => checkEngines({
 			engines: {
-				node: '16'
+				node: '14'
 			}
 		}, (err, info) => {
-			log(chalk.red(err.message))
-			process.exit(1)
+			if (err) {
+				log(chalk.red(err.message))
+				process.exit(1)
+			}
+			res();
 		}))
 	});
 })
