@@ -1,6 +1,6 @@
 prepare(async ({ projectDep, plugin }) => {
 	await projectDep('cowsay@1.5.0')
-	await plugin('./plugins')
+	plugin('./plugins')
 })
 
 define(async ({ pkg, dep, devDep, script }) => {

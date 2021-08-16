@@ -53,6 +53,7 @@ export async function loadPlugin(originalPluginPath, inheritedProjectObject = nu
 	let { prepare, controller: prepareController } = createPreparer(projectObject, __dirname, loadPlugin);
 
 	let { define, controller: defineController } = createDefiner(projectObject);
+
 	if (isRootPlugin) {
 		const scriptDirName = dirname(fileURLToPath(import.meta.url));
 		prepare(async ({ plugin }) => {
