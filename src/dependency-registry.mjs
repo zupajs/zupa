@@ -79,18 +79,75 @@ Latest versions of packages:
 		}
 	}
 
-	const installDeps = async (deps, save = '--save-dev') => {
+	const VERSION_MATCH = {
+		notInstalled: 0,
+		versionMismatch: 1,
+		installed: 2
+	}
+
+	function matchInstalledVersion(dep) {
+		const parts = dep.split('@')
+		const packageName = parts[0]
+		const version = parts[1]
+
+		try {
+			const pkgJson = require(`${packageName}/package.json`);
+
+			const versionMatch = version === pkgJson.version;
+
+			return versionMatch ? {
+				match: VERSION_MATCH.installed
+			} : {
+				match: VERSION_MATCH.versionMismatch,
+				data: {
+					expected: version,
+					installed: pkgJson.version
+				}
+			}
+		}
+		catch (e) {
+			if (e.code === 'MODULE_NOT_FOUND') {
+				return { match: VERSION_MATCH.notInstalled }
+			}
+		}
+	}
+
+	const installDeps = async (desiredDeps, save = '--save-dev') => {
+
+		const deps = desiredDeps.filter(dep => {
+			const versionMatch = matchInstalledVersion(dep);
+
+			if (versionMatch.match === VERSION_MATCH.installed) {
+				log(logColor(`${dep} is already installed. Skip install`))
+				return false;
+			}
+			else if (versionMatch.match === VERSION_MATCH.versionMismatch) {
+				log(chalk.yellow(
+					`WARN: ${dep} is already installed, but has other version than expected. 
+					Expected: ${versionMatch.data.expected}, installed: ${versionMatch.data.installed}`
+				));
+			}
+			return true;
+		})
+
+		if (deps.length === 0) {
+			log(logColor('Nothing to install. Everything is up to date'))
+			return;
+		}
+
+		const npmArgs = ['install', '--color=always', '--json=true', save, ...deps];
+		log(logColor('npm ' + npmArgs.join(' ')))
 
 		const call = execa(
 			'npm',
-			['install', '--color=always', save, ...deps],
+			npmArgs,
 			{
 				preferLocal: true,
 				cwd: __dirname,
 
 			}
 		);
-		if (log.verbose) {
+		if (log.isVerbose) {
 			call.stdout.pipe(process.stdout);
 		}
 
@@ -102,7 +159,7 @@ Latest versions of packages:
 			const deps = getDeps(DEP_TYPES.projectDep)
 			await checkUnversionedDeps(deps);
 
-			log(logColor('Installing project dependencies'), deps)
+			log(logColor(`Propagate installing project dependencies: ${deps.join(', ')}`));
 
 			await installDeps(deps, '--save-dev')
 		},

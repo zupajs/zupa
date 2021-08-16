@@ -7,4 +7,7 @@ export function log(...args) {
 	}
 }
 
-log.verbose = !!argv.verbose
+log.isVerbose = !!argv.verbose
+log.info = (...args) => {
+	console.log(...args)
+}

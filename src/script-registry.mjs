@@ -8,10 +8,10 @@ export function createScriptRegistry() {
 
 	const scriptRegistry = {};
 
-	return {
+	const registryRepresentation = {
 		api: {
 			script(name, scriptFn) {
-				log(logColor(`Define script ${name}`))
+				log(logColor(`Define script: ${chalk.bgBlue(name)}`))
 				scriptRegistry[name] = scriptFn
 			}
 		},
@@ -30,7 +30,13 @@ export function createScriptRegistry() {
 					await scriptFn.apply(null, params)
 
 				}
-			}
+			},
+
+		},
+		get registry() {
+			return scriptRegistry
 		}
-	}
+	};
+
+	return registryRepresentation;
 }

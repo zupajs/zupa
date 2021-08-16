@@ -12,7 +12,6 @@ export function createDefiner(projectObject) {
 		controller: {
 			async run() {
 				if (projectBuilder === null) {
-					log(chalk.red('you should provide a callback in define() function.'))
 					return;
 				}
 
