@@ -8,16 +8,23 @@ import { updatePackageJson } from "./package-json.mjs";
 let defaultPackageFile = './package.mjs';
 
 export async function main() {
-	if (fs.existsSync(defaultPackageFile)) {
+	try {
+		if (fs.existsSync(defaultPackageFile)) {
 
-		const filepath = resolve(defaultPackageFile)
-		await importPath(filepath)
+			const filepath = resolve(defaultPackageFile)
+			await importPath(filepath)
+		}
+	}
+	catch (e) {
+		// TODO 16-Aug-2021/zslengyel: better error handling
+		log.error(e.message)
 	}
 }
 
 const argv = minimist(process.argv.slice(2))
 
 async function importPath(filepath, origin = filepath) {
+
 	const projectObject = await loadPlugin(filepath);
 
 	await projectObject.events.emitSerial('prepare:after');
