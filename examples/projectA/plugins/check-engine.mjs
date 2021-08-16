@@ -1,8 +1,6 @@
 
 prepare(async ({ projectDep, plugin }) => {
 	projectDep('check-engines@1.5.0')
-
-	await plugin('./sub-plugin.mjs')
 })
 
 define(({ project }) => {

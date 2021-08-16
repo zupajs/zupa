@@ -12,7 +12,7 @@ export async function createProjectObject(__filename, __dirname) {
 	const events = new Emittery({
 		debug: {
 			name: basename(__filename),
-			enabled: true,
+			enabled: log.isVerbose,
 			logger(type, debugName, eventName, eventData) {
 				log(`[${debugName}:${type}]: ${eventName.toString()}`);
 			}
