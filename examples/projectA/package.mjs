@@ -1,4 +1,9 @@
-prepare(async ({ projectDep, plugin }) => {
+prepare(async ({ projectDep, plugin, config }) => {
+
+	//config.patch({
+	//
+	//})
+
 	await projectDep('cowsay@1.5.0')
 	plugin('./plugins')
 })

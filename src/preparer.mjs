@@ -32,7 +32,6 @@ export function createPreparer(projectObject, __dirname, loadPlugin) {
 					...projectObject.dependencyRegistry.prepareApi
 				})
 
-				log('Wait until all plugins are loaded')
 				await Promise.all(pluginLoads)
 			}
 		}

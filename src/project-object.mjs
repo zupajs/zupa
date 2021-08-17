@@ -4,7 +4,8 @@ import chalk from 'chalk';
 import { createDependencyRegistry } from "./dependency-registry.mjs";
 import { createScriptRegistry } from "./script-registry.mjs";
 import { basename } from 'path';
-import { loadPackageJson } from "./package-json.mjs";
+import { loadPackageJson, updatePackageJson } from "./package-json.mjs";
+import minimist from "minimist";
 
 const eventColor = chalk.whiteBright.bgCyanBright
 
@@ -23,7 +24,10 @@ export async function createProjectObject(__filename, __dirname) {
 	const dependencyRegistry = createDependencyRegistry(__dirname, events);
 	const scriptRegistry = createScriptRegistry();
 
+	const argv = minimist(process.argv.slice(2));
+
 	return {
+		argv,
 		__dirname,
 		events,
 		pkg,
@@ -36,6 +40,18 @@ export async function createProjectObject(__filename, __dirname) {
 			events.emit(eventName, payload)
 		},
 		dependencyRegistry,
-		scriptRegistry
+		scriptRegistry,
+		async run() {
+
+			if (argv._.length > 0) {
+				await scriptRegistry.controller.run()
+			}
+			else {
+				await dependencyRegistry.controller.addDepsToPackageJson(pkg)
+				await updatePackageJson(pkg, __dirname);
+
+				await dependencyRegistry.controller.installDeps()
+			}
+		}
 	};
 }
