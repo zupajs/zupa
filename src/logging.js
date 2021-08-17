@@ -1,9 +1,9 @@
-import minimist from "minimist";
-import chalk from 'chalk'
+const minimist = require('minimist')
+const chalk = require('chalk')
 
 const argv = minimist(process.argv.slice(2))
 
-export function log(...args) {
+function log(...args) {
 	if (argv.verbose) {
 		console.log(...args)
 	}
@@ -15,4 +15,8 @@ log.info = (...args) => {
 }
 log.error = (...args) => {
 	console.error(...args.map(arg => chalk.red(arg)))
+}
+
+module.exports = {
+	log
 }

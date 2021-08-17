@@ -1,10 +1,10 @@
-import minimist from "minimist";
-import { log } from './logging.mjs'
-import chalk from 'chalk';
+const minimist = require('minimist')
+const { log } = require('./logging')
+const chalk = require('chalk')
 
 const logColor = chalk.magenta;
 
-export function createScriptRegistry() {
+function createScriptRegistry() {
 
 	const scriptRegistry = {};
 
@@ -39,4 +39,8 @@ export function createScriptRegistry() {
 	};
 
 	return registryRepresentation;
+}
+
+module.exports = {
+	createScriptRegistry
 }

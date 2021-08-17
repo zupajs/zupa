@@ -1,17 +1,18 @@
-import { dirname, resolve } from "path";
-import { createRequire } from "module";
-import { log } from "./logging.mjs";
-import chalk from "chalk";
-import url, { fileURLToPath } from "url";
-import { createPreparer } from "./preparer.mjs";
-import { createDefiner } from "./definer.mjs";
-import { createProjectObject } from "./project-object.mjs";
-import { initPackageJson } from "./package-json.mjs";
-import { existsSync, lstatSync } from 'fs'
+const { dirname, resolve } = require('path')
+const { createRequire } = require('module')
+const { log } = require('./logging')
+const chalk = require('chalk')
+const { createPreparer } = require('./preparer')
+const { createDefiner } = require('./definer')
+const { createProjectObject } = require('./project-object')
+const { initPackageJson } = require('./package-json')
+const { existsSync, lstatSync } = require('fs')
+const { __zupaDirname } = require('./zupa-dir')
+const { shortenPath } = require("./paths");
 
 const logColor = chalk.blueBright
 
-function normalizePluginpath(pluginPath) {
+function normalizePluginPath(pluginPath) {
 	if (lstatSync(pluginPath).isDirectory()) {
 
 		const indexOptions = ['index.mjs', 'index.js'];
@@ -32,52 +33,55 @@ function normalizePluginpath(pluginPath) {
 	return pluginPath
 }
 
-export async function loadPlugin(originalPluginPath, inheritedProjectObject = null) {
+async function loadPlugin(originalPluginPath, inheritedProjectObject = null) {
 
-	const pluginPath = normalizePluginpath(originalPluginPath);
+	const pluginPath = normalizePluginPath(originalPluginPath);
 
-	log(logColor(`Loading plugin ${pluginPath}`))
 
-	let __filename = resolve(pluginPath)
-	let __dirname = dirname(pluginPath)
-
-	let require = createRequire(pluginPath)
+	const __filename = resolve(pluginPath);
+	const __dirname = dirname(pluginPath);
 
 	const isRootPlugin = inheritedProjectObject === null;
 	let projectObject = inheritedProjectObject;
+
 	if (isRootPlugin) {
 		await initPackageJson(__dirname)
 		projectObject = await createProjectObject(__filename, __dirname)
 
 	}
+
+	log(logColor(`🔌 load plugin: ${shortenPath(projectObject.__dirname, pluginPath)}`))
+
 	let { prepare, controller: prepareController } = createPreparer(projectObject, __dirname, loadPlugin);
 
 	let { define, controller: defineController } = createDefiner(projectObject);
 
 	if (isRootPlugin) {
-		const scriptDirName = dirname(fileURLToPath(import.meta.url));
 		prepare(async ({ plugin }) => {
-			await plugin(resolve(scriptDirName, './core-plugins/index.mjs'))
+			const corePluginsPath = resolve(__zupaDirname, './core-plugins/index.js');
+			await plugin(corePluginsPath)
 		});
 		await prepareController.run();
-
 	}
 
 	Object.assign(global, {
 		__filename,
 		__dirname,
-		require,
 		prepare,
 		define,
 		log,
 		chalk
 	});
 
-	await import(url.pathToFileURL(pluginPath));
+	await import(pluginPath)
 
 	await prepareController.run()
 	await defineController.run()
 
 	return projectObject;
+}
+
+module.exports = {
+	loadPlugin
 }
 

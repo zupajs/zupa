@@ -1,23 +1,33 @@
-import execa from "execa";
-import { log } from './logging.mjs'
-import chalk from "chalk";
+const execa = require('execa')
+const { log } = require('./logging')
+const chalk = require('chalk')
+const { createRequire } = require('module')
 
 const logColor = chalk.green;
+const logIcon = '📦';
 
-const DEP_TYPES = {
+const DepType = {
 	projectDep: 'projectDep',
 	dep: 'dep',
 	devDep: 'devDep'
+};
+
+const MatchType = {
+	notInstalled: 0,
+	versionMismatch: 1,
+	installed: 2
 }
 
-export function createDependencyRegistry(__dirname, events) {
+function createDependencyRegistry(__dirname, __filename, events) {
 
 	const registry = {
 		deps: []
 	}
 
-	const addDep = async (npmPackage, type) => {
-		log(logColor(`Adding package to dependencies ${type}`), npmPackage);
+	const projectRequire = createRequire(__filename);
+
+	const addDep = (npmPackage, type) => {
+		log(logColor(`${logIcon} dependency '${type}'`), npmPackage);
 
 		let version = '';
 		let packageName = npmPackage;
@@ -79,26 +89,20 @@ Latest versions of packages:
 		}
 	}
 
-	const VERSION_MATCH = {
-		notInstalled: 0,
-		versionMismatch: 1,
-		installed: 2
-	}
-
 	function matchInstalledVersion(dep) {
 		const parts = dep.split('@')
 		const packageName = parts[0]
 		const version = parts[1]
 
 		try {
-			const pkgJson = require(`${packageName}/package.json`);
+			const pkgJson = projectRequire(`${packageName}/package.json`);
 
 			const versionMatch = version === pkgJson.version;
 
 			return versionMatch ? {
-				match: VERSION_MATCH.installed
+				match: MatchType.installed
 			} : {
-				match: VERSION_MATCH.versionMismatch,
+				match: MatchType.versionMismatch,
 				data: {
 					expected: version,
 					installed: pkgJson.version
@@ -107,8 +111,9 @@ Latest versions of packages:
 		}
 		catch (e) {
 			if (e.code === 'MODULE_NOT_FOUND') {
-				return { match: VERSION_MATCH.notInstalled }
+				return { match: MatchType.notInstalled }
 			}
+			throw new Error(`Cannot recognize state of dependency: ${packageName}. ${e}`)
 		}
 	}
 
@@ -117,11 +122,11 @@ Latest versions of packages:
 		const deps = desiredDeps.filter(dep => {
 			const versionMatch = matchInstalledVersion(dep);
 
-			if (versionMatch.match === VERSION_MATCH.installed) {
+			if (versionMatch.match === MatchType.installed) {
 				log(logColor(`${dep} is already installed. Skip install`))
 				return false;
 			}
-			else if (versionMatch.match === VERSION_MATCH.versionMismatch) {
+			else if (versionMatch.match === MatchType.versionMismatch) {
 				log(chalk.yellow(
 					`WARN: ${dep} is already installed, but has other version than expected. 
 					Expected: ${versionMatch.data.expected}, installed: ${versionMatch.data.installed}`
@@ -135,7 +140,7 @@ Latest versions of packages:
 			return;
 		}
 
-		const npmArgs = ['install', '--color=always', '--json=true', save, ...deps];
+		const npmArgs = ['install', '--color=always', save, ...deps];
 		log(logColor('npm ' + npmArgs.join(' ')))
 
 		const call = execa(
@@ -148,46 +153,47 @@ Latest versions of packages:
 			}
 		);
 		if (log.isVerbose) {
-			call.stdout.pipe(process.stdout);
+			call?.stdout?.pipe(process.stdout);
 		}
 
 		await call;
 	}
 
-	let controller = {
+	const controller = {
 		async installProjectDeps() {
-			const deps = getDeps(DEP_TYPES.projectDep)
+			const deps = getDeps(DepType.projectDep)
 			await checkUnversionedDeps(deps);
 
-			log(logColor(`Propagate installing project dependencies: ${deps.join(', ')}`));
+			log(logColor(`${logIcon} Propagate installing project dependencies: ${deps.join(', ')}`));
 
 			await installDeps(deps, '--save-dev')
 		},
 
 		async addDepsToPackageJson(pkg) {
 			await checkUnversionedDeps([
-				...getDeps(DEP_TYPES.devDep),
-				...getDeps(DEP_TYPES.projectDep),
-				...getDeps(DEP_TYPES.dep)]
+				...getDeps(DepType.devDep),
+				...getDeps(DepType.projectDep),
+				...getDeps(DepType.dep)]
 			)
 
-			const devDeps = getDeps(DEP_TYPES.devDep, false);
-			const projectDeps = getDeps(DEP_TYPES.projectDep, false);
+			const devDeps = getDeps(DepType.devDep, false);
+			const projectDeps = getDeps(DepType.projectDep, false);
 
 			pkg.devDependencies = [...projectDeps, ...devDeps].reduce((obj, item) => {
 				obj[item.packageName] = item.version;
 				return obj;
 			}, {});
 
-			pkg.dependencies = getDeps(DEP_TYPES.dep, false).reduce((obj, item) => {
+			const deps = getDeps(DepType.dep, false);
+			pkg.dependencies = deps.reduce((obj, item) => {
 				obj[item.packageName] = item.version;
 				return obj;
 			}, {});
 		},
 
 		async installDeps() {
-			const deps = getDeps(DEP_TYPES.dep)
-			log(logColor('Installing package.json dependencies'), deps)
+			const deps = getDeps(DepType.dep)
+			log(logColor('${logIcon} Installing package.json dependencies'), deps)
 
 			await installDeps([], '')
 		}
@@ -202,17 +208,21 @@ Latest versions of packages:
 		controller,
 		prepareApi: {
 			projectDep(npmPackage) {
-				addDep(npmPackage, DEP_TYPES.projectDep)
+				addDep(npmPackage, DepType.projectDep)
 			}
 		},
 		defineApi: {
 			dep(npmPackage) {
-				addDep(npmPackage, DEP_TYPES.dep)
+				addDep(npmPackage, DepType.dep)
 			},
 
 			devDep(npmPackage) {
-				addDep(npmPackage, DEP_TYPES.devDep)
+				addDep(npmPackage, DepType.devDep)
 			}
 		}
 	}
+}
+
+module.exports = {
+	createDependencyRegistry
 }

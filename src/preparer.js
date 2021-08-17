@@ -1,10 +1,12 @@
-import { resolve } from "path";
+const { resolve } = require('path');
+const { createRequire } = require("module");
+const { log } = require('./logging');
 
-export function createPreparer(projectObject, __dirname, loadPlugin) {
+function createPreparer(projectObject, __dirname, loadPlugin) {
 	let prepareBuilder = null;
 
 	// array of promises
-	const pluginLoads = []
+	const pluginLoads = [];
 
 	return {
 		prepare: function (cb) {
@@ -27,8 +29,13 @@ export function createPreparer(projectObject, __dirname, loadPlugin) {
 					await pluginLoading
 				};
 
+				const require = createRequire(projectObject.__filename);
+
 				await prepareBuilder({
+					require,
+					log,
 					plugin,
+					project: projectObject,
 					...projectObject.dependencyRegistry.prepareApi
 				})
 
@@ -36,4 +43,8 @@ export function createPreparer(projectObject, __dirname, loadPlugin) {
 			}
 		}
 	}
+}
+
+module.exports = {
+	createPreparer
 }

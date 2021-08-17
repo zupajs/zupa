@@ -1,19 +1,19 @@
-import execa from "execa";
-import { resolve } from "path";
-import fs from "fs";
-import { log } from "./logging.mjs";
+const execa = require('execa')
+const { resolve } = require('path')
+const fs = require('fs')
+const { log } = require('./logging')
 
-export async function initPackageJson(__dirname) {
+async function initPackageJson(__dirname) {
 	await execa('npm', ['init', '-y'], {
 		cwd: __dirname
 	})
 }
 
-export function resolvePackageJsonPath(__dirname) {
+function resolvePackageJsonPath(__dirname) {
 	return resolve(__dirname, 'package.json');
 }
 
-export async function loadPackageJson(__dirname) {
+async function loadPackageJson(__dirname) {
 	const packagePath = resolvePackageJsonPath(__dirname);
 
 	if (fs.existsSync(packagePath)) {
@@ -23,11 +23,18 @@ export async function loadPackageJson(__dirname) {
 	throw new Error('package.json does not exist')
 }
 
-export async function updatePackageJson(pkg, __dirname) {
+async function updatePackageJson(pkg, __dirname) {
 
 	const packageJsonPath = resolvePackageJsonPath(__dirname)
 	log('Update', packageJsonPath)
 
 	const pkgString = JSON.stringify(pkg, null, 4);
 	fs.writeFileSync(packageJsonPath, pkgString, 'utf-8')
+}
+
+module.exports = {
+	initPackageJson,
+	resolvePackageJsonPath,
+	updatePackageJson,
+	loadPackageJson
 }

@@ -2,7 +2,7 @@ prepare(({ projectDep }) => {
 	projectDep('console-table-printer@2.10.0')
 })
 
-define(({ script, project, log }) => {
+define(({ script, project, require }) => {
 
 	function listScripts(registry) {
 		const { Table } = require('console-table-printer');
