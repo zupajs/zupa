@@ -28,7 +28,7 @@
   ],
   "devDependencies": {
     "@types/node": "^16.6.1",
-    "ava": "^3.15.0",
+    "ava": "^3.15.0"
   },
   "directories": {
     "example": "examples",
