@@ -12,7 +12,7 @@ if (!log.isVerbose) {
 	process.argv = [...process.argv, '--silent']
 }
 
-prepare(async ({ project, log, require }) => {
+prepare(async ({ project, log, config }) => {
 
 	const nodeModulesPath = resolve(project.__dirname, 'node_modules');
 	if (!fs.existsSync(nodeModulesPath)) {
@@ -112,10 +112,12 @@ prepare(async ({ project, log, require }) => {
 	project.dependencyRegistry.setPackageManager(npmPackageManager)
 
 	project.on('finally', () => {
-		const packageJsonPath = resolve(project.__dirname, 'package.json');
-		if (fs.existsSync(packageJsonPath)) {
-			log(`removing ${packageJsonPath}`)
-			fs.rmSync(packageJsonPath)
+		if (config.get().deps.removePackageJson) {
+			const packageJsonPath = resolve(project.__dirname, 'package.json');
+			if (fs.existsSync(packageJsonPath)) {
+				log(`removing ${packageJsonPath}`)
+				fs.rmSync(packageJsonPath)
+			}
 		}
 	})
 })

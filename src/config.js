@@ -3,6 +3,9 @@ const merge = require('deepmerge')
 const defaultConfig = {
 	scripts: {
 		default: ''
+	},
+	deps: {
+		removePackageJson: true
 	}
 }
 

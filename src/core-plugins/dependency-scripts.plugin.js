@@ -57,11 +57,21 @@ define(async ({ project, config, script, log, pkg }) => {
 
 				await depsController.addDepsToPackageJson(pkg)
 
-				updatePackageJson(pkg, project.__dirname);
-
 				await depsController.installDeps();
 
 				log.info(`${chalk.green.bold('✅️')} Packages are up-to-date`)
+			},
+
+			async emitPackageJson() {
+				config.patch({
+					deps: {
+						removePackageJson: false
+					}
+				});
+
+				await project.dependencyRegistry.controller.addDepsToPackageJson(pkg)
+
+				updatePackageJson(pkg, project.__dirname);
 			}
 
 		})

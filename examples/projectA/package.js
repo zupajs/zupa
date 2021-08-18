@@ -8,6 +8,7 @@ prepare(async ({ projectDep, plugin }) => {
 })
 
 define(async ({ pkg, dep, devDep }) => {
+	pkg.name = 'projectA';
 	pkg.version = '1.0.1';
 	pkg.license = 'MIT';
 	pkg.author = 'zupa';

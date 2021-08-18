@@ -48,7 +48,7 @@ async function createProjectObject(__filename, __dirname) {
 		}
 	};
 
-	const pkg = await loadPackageJson(__dirname);
+	const pkg = {};
 	const dependencyRegistry = createDependencyRegistry(__dirname, __filename, projectObject);
 	const scriptRegistry = createScriptRegistry(config);
 
