@@ -40,7 +40,8 @@ export interface ProjectObject {
 }
 
 export type PrepareContext = { plugin: PluginLoadInstruction } &
-	DependencyRegistryPrepareApi;
+	DependencyRegistryPrepareApi &
+	{project: ProjectObject};
 
 export interface PrepareCallback {
 	(context: PrepareContext): (void | Promise<void>);
@@ -108,11 +109,19 @@ export interface DependencyRegistryPrepareApi {
 	projectDep(npmPackage): void;
 }
 
+export interface PackageManager {
+	getAvailableVersions(packageName: string): Promise<string[]>;
+	install(deps: string[]): Promise<void>;
+
+	toString(): string;
+}
+
 export interface DependencyRegistry {
 	registry: DependencyRegistryStore;
 	controller: DependencyRegistryController;
 	prepareApi: DependencyRegistryPrepareApi;
 	defineApi: DependencyRegistryDefineApi;
+	setPackageManager(pm: PackageManager): void;
 }
 
 

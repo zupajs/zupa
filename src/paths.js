@@ -1,6 +1,6 @@
 
-function shortenPath(baseDir, projectPath) {
-	return projectPath.replace(baseDir, '')
+function shortenPath(baseDir, projectPath, replace = '') {
+	return projectPath.replace(baseDir, replace)
 }
 
 module.exports = {

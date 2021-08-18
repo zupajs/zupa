@@ -6,11 +6,15 @@ const { loadPlugin } = require('./plugin-loader')
 const defaultPackageFile = './package.js';
 
 module.exports.main = async function main() {
+	let exitCode = 0;
+	let projectObject = null;
+
 	try {
 		if (fs.existsSync(defaultPackageFile)) {
 
 			const filepath = resolve(defaultPackageFile)
-			const projectObject = await loadPackageFile(filepath)
+
+			projectObject = await loadPackageFile(filepath)
 
 			await projectObject.run()
 		}
@@ -18,7 +22,12 @@ module.exports.main = async function main() {
 	catch (e) {
 		// TODO 16-Aug-2021/zslengyel: better error handling
 		log.error(e.message + '\n\n' + e.stack)
-		process.exit(1)
+		exitCode = 1;
+
+	} finally {
+		await projectObject.events.emitSerial('finally')
+
+		process.exit(exitCode)
 	}
 }
 

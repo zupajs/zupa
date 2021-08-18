@@ -10,9 +10,10 @@ prepare(async ({ projectDep, plugin }) => {
 define(async ({ pkg, dep, devDep }) => {
 	pkg.version = '1.0.1';
 	pkg.license = 'MIT';
-	pkg.author = 'pajy';
+	pkg.author = 'zupa';
 
 	dep('lodash-es@4.17.21');
+	dep('jquery@3.6.0');
 	devDep('momentjs@2.0.0')
 
 })

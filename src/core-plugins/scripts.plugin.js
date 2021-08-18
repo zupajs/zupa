@@ -20,16 +20,16 @@ define(({ script, project, require }) => {
 		p.printTable();
 	}
 
-	script('scripts', function scriptsScript(command, ...params) {
+	script('scripts', async function scriptsScript(...params) {
 		const registry = project.scriptRegistry.registry;
-		switch (command) {
-			case 'ls':
+		await script.route(params, {
+			ls(command) {
 				listScripts(registry)
-				break;
-
-			default:
+			},
+			default() {
 				throw new Error('missing parameter TODO help')
-		}
+			}
+		})
 	})
 
 })

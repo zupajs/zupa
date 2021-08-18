@@ -6,10 +6,17 @@ const { createScriptRegistry } = require('./script-registry')
 const { basename } = require('path')
 const { loadPackageJson, updatePackageJson } = require('./package-json')
 const minimist = require('minimist')
-
-const eventColor = chalk.whiteBright.bgCyanBright
+const { createConfig } = require("./config");
 
 async function createProjectObject(__filename, __dirname) {
+
+	const argv = minimist(process.argv.slice(2));
+
+	if (!argv.verbose) {
+		process.argv = [...process.argv, '--silent']
+	}
+
+	const config = createConfig(argv);
 
 	const events = new Emittery({
 		debug: {
@@ -21,40 +28,35 @@ async function createProjectObject(__filename, __dirname) {
 		}
 	})
 
-	const pkg = await loadPackageJson(__dirname);
-	const dependencyRegistry = createDependencyRegistry(__dirname, __filename, events);
-	const scriptRegistry = createScriptRegistry();
-
-	const argv = minimist(process.argv.slice(2));
-
-	return {
+	const projectObject = {
+		config,
 		argv,
 		__filename,
 		__dirname,
 		events,
-		pkg,
 		on(eventName, cb) {
 			return events.on(eventName, cb)
 		},
-		dependencyRegistry,
-		scriptRegistry,
+
 		async run() {
 
 			await events.emitSerial('run:before')
 
-			if (argv._.length > 0) {
-				await scriptRegistry.controller.run()
-			}
-			else {
-				await dependencyRegistry.controller.addDepsToPackageJson(pkg)
-				await updatePackageJson(pkg, __dirname);
-
-				await dependencyRegistry.controller.installDeps()
-			}
+			await scriptRegistry.controller.run()
 
 			await events.emitSerial('run:after')
 		}
 	};
+
+	const pkg = await loadPackageJson(__dirname);
+	const dependencyRegistry = createDependencyRegistry(__dirname, __filename, projectObject);
+	const scriptRegistry = createScriptRegistry(config);
+
+	projectObject['pkg'] = pkg;
+	projectObject['dependencyRegistry'] = dependencyRegistry;
+	projectObject['scriptRegistry'] = scriptRegistry;
+
+	return projectObject;
 }
 
 module.exports = {

@@ -33,6 +33,7 @@ function createPreparer(projectObject, __dirname, loadPlugin) {
 
 				await prepareBuilder({
 					require,
+					config: projectObject.config,
 					log,
 					plugin,
 					project: projectObject,

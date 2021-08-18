@@ -19,6 +19,7 @@ function createDefiner(projectObject) {
 				await defineBuilder({
 					pkg: projectObject.pkg,
 					project: projectObject,
+					config: projectObject.config,
 					require,
 					log,
 					...projectObject.scriptRegistry.api,

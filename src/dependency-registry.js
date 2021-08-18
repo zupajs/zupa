@@ -1,7 +1,6 @@
-const execa = require('execa')
 const { log } = require('./logging')
 const chalk = require('chalk')
-const { createRequire } = require('module')
+const { createRequire, } = require('module')
 
 const logColor = chalk.green;
 const logIcon = '📦';
@@ -18,16 +17,31 @@ const MatchType = {
 	installed: 2
 }
 
-function createDependencyRegistry(__dirname, __filename, events) {
+function createDependencyRegistry(__dirname, __filename, project) {
 
 	const registry = {
 		deps: []
+	};
+
+	let packageManager = null;
+
+	function getPackageManager() {
+		if (packageManager === null) {
+			throw new Error('Package manager is not set. Please define one.')
+		}
+		return packageManager;
 	}
 
 	const projectRequire = createRequire(__filename);
 
 	const addDep = (npmPackage, type) => {
-		log(logColor(`${logIcon} dependency '${type}'`), npmPackage);
+		const source = project.activePlugin && project.activePlugin.path;
+
+		if (!source) {
+			throw new Error(`Loading dependency ${npmPackage} outside of a plugin`)
+		}
+
+		log(logColor(`${logIcon} dependency '${type}' from ${source}`), npmPackage);
 
 		let version = '';
 		let packageName = npmPackage;
@@ -38,7 +52,7 @@ function createDependencyRegistry(__dirname, __filename, events) {
 			version = parts[1]
 		}
 
-		registry.deps.push({ packageName, version, type })
+		registry.deps.push({ packageName, version, type, source })
 	}
 
 	const getDeps = (type, normalize = true) => {
@@ -70,11 +84,7 @@ function createDependencyRegistry(__dirname, __filename, events) {
 			const suggestions = [];
 
 			for (let dep of unversionedDeps) {
-				const versionsResult = await execa('npm', ['view', dep.packageName, 'versions', '--json'], {
-					preferLocal: true,
-					cwd: __dirname,
-				});
-				const versions = JSON.parse(versionsResult.stdout);
+				const versions = await getPackageManager().getAvailableVersions(dep.packageName)
 				const version = versions[versions.length - 1]
 
 				suggestions.push(`${dep.packageName}@${version}`)
@@ -117,7 +127,11 @@ Latest versions of packages:
 		}
 	}
 
-	const installDeps = async (desiredDeps, save = '--save-dev') => {
+	const installDeps = async (desiredDeps) => {
+
+		await checkUnversionedDeps(desiredDeps);
+
+		log(logColor(`${logIcon} Propagate installing project dependencies: ${desiredDeps.join(', ')}`));
 
 		const deps = desiredDeps.filter(dep => {
 			const versionMatch = matchInstalledVersion(dep);
@@ -140,33 +154,14 @@ Latest versions of packages:
 			return;
 		}
 
-		const npmArgs = ['install', '--color=always', save, ...deps];
-		log(logColor('npm ' + npmArgs.join(' ')))
-
-		const call = execa(
-			'npm',
-			npmArgs,
-			{
-				preferLocal: true,
-				cwd: __dirname,
-
-			}
-		);
-		if (log.isVerbose) {
-			call?.stdout?.pipe(process.stdout);
-		}
-
-		await call;
+		// install
+		await getPackageManager().install(deps)
 	}
 
 	const controller = {
 		async installProjectDeps() {
 			const deps = getDeps(DepType.projectDep)
-			await checkUnversionedDeps(deps);
-
-			log(logColor(`${logIcon} Propagate installing project dependencies: ${deps.join(', ')}`));
-
-			await installDeps(deps, '--save-dev')
+			await installDeps(deps)
 		},
 
 		async addDepsToPackageJson(pkg) {
@@ -193,19 +188,23 @@ Latest versions of packages:
 
 		async installDeps() {
 			const deps = getDeps(DepType.dep)
-			log(logColor('${logIcon} Installing package.json dependencies'), deps)
+			const devDeps = getDeps(DepType.devDep)
 
-			await installDeps([], '')
+			await installDeps([...deps, ...devDeps])
 		}
 	};
 
-	events.on('prepare:after', async () => {
+	project.events.on('prepare:after', async () => {
 		await controller.installProjectDeps();
 	})
 
 	return {
 		registry,
 		controller,
+		setPackageManager: function (pm) {
+			log(logColor(`Registering package manager: ${pm}`))
+			packageManager = pm;
+		},
 		prepareApi: {
 			projectDep(npmPackage) {
 				addDep(npmPackage, DepType.projectDep)
