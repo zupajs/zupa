@@ -1,7 +1,8 @@
-const { log } = require('./logging');
 const { createRequire } = require('module')
 
-function createDefiner(projectObject) {
+function createDefiner(project) {
+	const { log } = project;
+
 	let defineBuilder = null;
 
 	return {
@@ -14,16 +15,16 @@ function createDefiner(projectObject) {
 					return;
 				}
 
-				const require = createRequire(projectObject.__filename);
+				const require = createRequire(project.__filename);
 
 				await defineBuilder({
-					pkg: projectObject.pkg,
-					project: projectObject,
-					config: projectObject.config,
+					pkg: project.pkg,
+					project: project,
+					config: project.config,
 					require,
 					log,
-					...projectObject.scriptRegistry.api,
-					...projectObject.dependencyRegistry.defineApi
+					...project.scriptRegistry.api,
+					...project.dependencyRegistry.defineApi
 				});
 			}
 		}

@@ -2,6 +2,7 @@ const { updatePackageJson } = require('../package-json');
 const { groupBy } = require('lodash')
 const { shortenPath } = require('../paths')
 const { __zupaDirname } = require("../zupa-dir");
+const chalk = require('chalk')
 
 prepare(({ projectDep }) => {
 	projectDep('rimraf@3.0.2')

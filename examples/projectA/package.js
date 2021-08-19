@@ -1,8 +1,10 @@
-prepare(async ({ projectDep, plugin }) => {
+prepare(async ({ projectDep, plugin, config }) => {
 
-	//config.patch({
-	//
-	//})
+	config.patch({
+		deps: {
+			removePackageJson: false
+		}
+	})
 
 	await plugin('./plugins')
 })

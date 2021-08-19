@@ -1,12 +1,10 @@
 define(({ config, script }) => {
 
-	script('config', (...params) => {
+	script('config', async (...params) => {
 
-		script.route(params, {
+		return await script.route(params, {
 			async default() {
-
-				log.info(config.get())
-
+				return config.get()
 			}
 		})
 

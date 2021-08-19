@@ -7,12 +7,13 @@ const { stripAnsi } = require('../common/strip-ansi.js')
 const logColor = chalk.green;
 const logIcon = '📦';
 
-if (!log.isVerbose) {
-	// disable npm logging
-	process.argv = [...process.argv, '--silent']
-}
-
 prepare(async ({ project, log, config }) => {
+
+	if (!log.isVerbose) {
+		// for npm calls
+		process.argv = [...process.argv, '--silent']
+	}
+
 
 	const nodeModulesPath = resolve(project.__dirname, 'node_modules');
 	if (!fs.existsSync(nodeModulesPath)) {

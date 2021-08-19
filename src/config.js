@@ -10,14 +10,13 @@ const defaultConfig = {
 	}
 }
 
-function createConfig(argv) {
-	// TODO 17-Aug-2021/zslengyel: handle argv
+function createConfig() {
 
 	let config = rc('zupa', defaultConfig)
 
 	return {
 		get() {
-			return config;
+			return { ...config };
 		},
 		patch(partialConfig) {
 			config = merge(config, partialConfig);

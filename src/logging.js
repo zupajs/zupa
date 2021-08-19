@@ -1,22 +1,27 @@
-const minimist = require('minimist')
-const chalk = require('chalk')
 
-const argv = minimist(process.argv.slice(2))
+function createLogger(events, verbose) {
 
-function log(...args) {
-	if (argv.verbose) {
-		console.log(...args)
+	async function log(...args) {
+		await events.emitSerial('output:log', { level: 'verbose', message: args })
 	}
-}
 
-log.isVerbose = !!argv.verbose
-log.info = (...args) => {
-	console.log(...args)
-}
-log.error = (...args) => {
-	console.error(...args.map(arg => chalk.red(arg)))
+	log.isVerbose = verbose;
+
+	log.info = (...args) => {
+		events.emitSerial('output:log:info', { level: 'info', message: args })
+	}
+
+	log.error = async (...args) => {
+		await events.emitSerial('output:log:error', { level: 'error', message: args });
+	}
+
+	log.result = async (output) => {
+		await events.emitSerial('output:log:result', { level: 'result', message: output });
+	}
+
+	return log;
 }
 
 module.exports = {
-	log
+	createLogger
 }

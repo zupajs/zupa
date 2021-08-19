@@ -1,56 +1,26 @@
 const { dirname, resolve } = require('path')
-const { log } = require('./logging')
 const chalk = require('chalk')
 const { createPreparer } = require('./preparer')
 const { createDefiner } = require('./definer')
-const { createProjectObject } = require('./project-object')
-const { existsSync, lstatSync } = require('fs')
 const { __zupaDirname } = require('./zupa-dir')
-const { shortenPath } = require("./paths");
+const { shortenPath, normalizePluginPath } = require("./paths");
 
 const logColor = chalk.blueBright
 
-function normalizePluginPath(pluginPath) {
-	if (lstatSync(pluginPath).isDirectory()) {
+async function loadPlugin(originalPluginPath, project, isRootPlugin = false) {
 
-		const indexOptions = ['index.mjs', 'index.js'];
-		let recommendedPluginPath = pluginPath;
-
-		indexOptions.forEach(indexOption => {
-			const option = resolve(pluginPath, indexOption);
-			if (existsSync(option)) {
-				recommendedPluginPath = option
-			}
-		})
-		if (pluginPath === recommendedPluginPath) {
-			throw new Error(`Cannot resolve plugin folder index file: ${pluginPath}`)
-		}
-		return recommendedPluginPath;
-	}
-
-	return pluginPath
-}
-
-async function loadPlugin(originalPluginPath, inheritedProjectObject = null) {
+	const { log } = project;
 
 	const pluginPath = normalizePluginPath(originalPluginPath);
-
 
 	const __filename = resolve(pluginPath);
 	const __dirname = dirname(pluginPath);
 
-	const isRootPlugin = inheritedProjectObject === null;
-	let projectObject = inheritedProjectObject;
+	log(logColor(`🔌 load plugin: ${shortenPath(project.__dirname, pluginPath)}`))
 
-	if (isRootPlugin) {
-		projectObject = await createProjectObject(__filename, __dirname)
-	}
+	let { prepare, controller: prepareController } = createPreparer(project, __dirname, loadPlugin);
 
-	log(logColor(`🔌 load plugin: ${shortenPath(projectObject.__dirname, pluginPath)}`))
-
-	let { prepare, controller: prepareController } = createPreparer(projectObject, __dirname, loadPlugin);
-
-	let { define, controller: defineController } = createDefiner(projectObject);
+	let { define, controller: defineController } = createDefiner(project);
 
 	if (isRootPlugin) {
 		prepare(async ({ plugin }) => {
@@ -65,32 +35,25 @@ async function loadPlugin(originalPluginPath, inheritedProjectObject = null) {
 		__dirname,
 		prepare,
 		define,
-		log,
-		chalk
 	});
 
 	await import(pluginPath)
 
 	async function pluginActivation(cb) {
-		projectObject.activePlugin = {
+		project.activePlugin = {
 			path: pluginPath
 		};
 
 		await cb()
 
-		projectObject.activePlugin = null;
+		project.activePlugin = null;
 	}
 
 	await pluginActivation(async () => await prepareController.run());
 
-	// FIXME 18-Aug-2021/zslengyel: wrong place
-	//await defineController.run()
-
-	projectObject.on('prepare:after', async () => {
+	project.on('prepare:after', async () => {
 		await pluginActivation(async () => await defineController.run());
 	})
-
-	return projectObject;
 }
 
 module.exports = {

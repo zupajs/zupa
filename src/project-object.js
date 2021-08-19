@@ -1,39 +1,35 @@
 const Emittery = require('emittery')
-const { log } = require('./logging')
+const { createLogger } = require('./logging')
 const chalk = require('chalk')
 const { createDependencyRegistry } = require('./dependency-registry')
 const { createScriptRegistry } = require('./script-registry')
 const { basename } = require('path')
-const { loadPackageJson, updatePackageJson } = require('./package-json')
-const minimist = require('minimist')
 const { createConfig } = require("./config");
 
 async function createProjectObject(__filename, __dirname) {
 
-	const argv = minimist(process.argv.slice(2));
+	const config = createConfig();
 
-	if (!argv.verbose) {
-		process.argv = [...process.argv, '--silent']
-	}
-
-	const config = createConfig(argv);
+	let log = null;
 
 	const events = new Emittery({
 		debug: {
 			name: basename(__filename),
-			enabled: log.isVerbose,
+			enabled: config.verbose,
 			logger(type, debugName, eventName, eventData) {
 				log(chalk.italic.inverse(`🔫 events [${debugName}:${type}]: ${eventName?.toString()}`));
 			}
 		}
 	})
 
+	log = createLogger(events, config.get().verbose);
+
 	const projectObject = {
 		config,
-		argv,
 		__filename,
 		__dirname,
 		events,
+		log,
 		on(eventName, cb) {
 			return events.on(eventName, cb)
 		},
@@ -42,7 +38,9 @@ async function createProjectObject(__filename, __dirname) {
 
 			await events.emitSerial('run:before')
 
-			await scriptRegistry.controller.run()
+			const scriptOutput = await scriptRegistry.controller.run();
+
+			await log.result(scriptOutput)
 
 			await events.emitSerial('run:after')
 		}
@@ -50,7 +48,7 @@ async function createProjectObject(__filename, __dirname) {
 
 	const pkg = {};
 	const dependencyRegistry = createDependencyRegistry(__dirname, __filename, projectObject);
-	const scriptRegistry = createScriptRegistry(config);
+	const scriptRegistry = createScriptRegistry(config, log);
 
 	projectObject['pkg'] = pkg;
 	projectObject['dependencyRegistry'] = dependencyRegistry;

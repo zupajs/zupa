@@ -1,4 +1,3 @@
-const { log } = require('./logging')
 const chalk = require('chalk')
 const { createRequire, } = require('module')
 
@@ -18,6 +17,8 @@ const MatchType = {
 }
 
 function createDependencyRegistry(__dirname, __filename, project) {
+
+	const { log } = project;
 
 	const registry = {
 		deps: []
@@ -41,7 +42,7 @@ function createDependencyRegistry(__dirname, __filename, project) {
 			throw new Error(`Loading dependency ${npmPackage} outside of a plugin`)
 		}
 
-		log(logColor(`${logIcon} dependency '${type}' from ${source}`), npmPackage);
+		log(logColor(`${logIcon} ${npmPackage} '${type}' from ${source} `));
 
 		let version = '';
 		let packageName = npmPackage;

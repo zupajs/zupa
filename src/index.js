@@ -1,11 +1,18 @@
 const fs = require('fs')
-const { resolve } = require('path')
-const { log } = require('./logging')
+const { resolve, dirname } = require('path')
 const { loadPlugin } = require('./plugin-loader')
+const { createProjectObject } = require("./project-object");
+const { normalizePluginPath } = require("./paths");
+const { attachOutput } = require("./output");
 
 const defaultPackageFile = './package.js';
 
 module.exports.main = async function main() {
+
+	process.on('uncaughtException', function (e) {
+		console.error('uncaughtException', e)
+	});
+
 	let exitCode = 0;
 	let projectObject = null;
 
@@ -13,30 +20,49 @@ module.exports.main = async function main() {
 		if (fs.existsSync(defaultPackageFile)) {
 
 			const filepath = resolve(defaultPackageFile)
+			projectObject = await prepareProject(filepath);
 
-			projectObject = await loadPackageFile(filepath)
+			await loadPackageFile(projectObject)
 
 			await projectObject.run()
+		}
+		else {
+			console.error('No package.js found in current folder')
 		}
 	}
 	catch (e) {
 		// TODO 16-Aug-2021/zslengyel: better error handling
-		log.error(e.message + '\n\n' + e.stack)
+		await projectObject.log.error(e.message + '\n\n' + e.stack)
+
+		// TODO 19-Aug-2021/zslengyel: fallback until logging works
+		console.error(e);
+
 		exitCode = 1;
 
-	} finally {
+	}
+	finally {
 		await projectObject.events.emitSerial('finally')
 
 		process.exit(exitCode)
 	}
 }
 
-async function loadPackageFile(filepath) {
+async function prepareProject(filepath) {
+	const pluginPath = normalizePluginPath(filepath);
 
-	const projectObject = await loadPlugin(filepath);
+	const __filename = resolve(pluginPath);
+	const __dirname = dirname(pluginPath);
 
-	await projectObject.events.emitSerial('prepare:after');
+	const projectObject = await createProjectObject(__filename, __dirname)
+
+	await attachOutput(projectObject)
 
 	return projectObject;
+}
 
+async function loadPackageFile(project) {
+
+	await loadPlugin(project.__filename, project, true);
+
+	await project.events.emitSerial('prepare:after');
 }

@@ -3,7 +3,7 @@ prepare(async ({ projectDep, plugin }) => {
 	projectDep('check-engines@1.5.0')
 })
 
-define(({ project }) => {
+define(({ project, log }) => {
 
 	project.on('prepare:after', async () => {
 		const checkEngines = require('check-engines');

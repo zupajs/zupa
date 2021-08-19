@@ -1,6 +1,5 @@
 const { resolve } = require('path');
 const { createRequire } = require("module");
-const { log } = require('./logging');
 
 function createPreparer(projectObject, __dirname, loadPlugin) {
 	let prepareBuilder = null;
@@ -34,7 +33,7 @@ function createPreparer(projectObject, __dirname, loadPlugin) {
 				await prepareBuilder({
 					require,
 					config: projectObject.config,
-					log,
+					log: projectObject.log,
 					plugin,
 					project: projectObject,
 					...projectObject.dependencyRegistry.prepareApi

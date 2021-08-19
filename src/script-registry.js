@@ -1,10 +1,8 @@
-const minimist = require('minimist')
-const { log } = require('./logging')
 const chalk = require('chalk')
 
 const logColor = chalk.magenta;
 
-function createScriptRegistry(config) {
+function createScriptRegistry(config, log) {
 
 	const scriptRegistry = {};
 
@@ -13,7 +11,7 @@ function createScriptRegistry(config) {
 		if (!scriptFn) {
 			throw new Error(`script is not defined: ${script}`)
 		}
-		await scriptFn.apply(null, params)
+		return await scriptFn.apply(null, params)
 	}
 
 	function scriptApi(name, scriptFn) {
@@ -40,7 +38,7 @@ function createScriptRegistry(config) {
 			throw new Error(`Not defined route in scripts: ${scriptName}`)
 		}
 
-		await scriptFn.apply(null, restParams)
+		return await scriptFn.apply(null, restParams);
 	}
 
 	const registryRepresentation = {
@@ -49,15 +47,16 @@ function createScriptRegistry(config) {
 		},
 		controller: {
 			async run() {
-				const argv = minimist(process.argv.slice(2))
-				if (argv._.length > 0) {
-					const script = argv._[0];
+				const argv = config.get()['_']
 
-					const params = argv._.splice(1);
-					await runScript(script, params);
+				if (argv.length > 0) {
+					const script = argv[0];
+
+					const params = argv.splice(1);
+					return await runScript(script, params);
 				}
 				else {
-					await runScript(config.get().scripts.default)
+					return await runScript(config.get().scripts.default)
 				}
 			},
 
