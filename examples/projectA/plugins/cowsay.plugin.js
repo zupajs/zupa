@@ -7,17 +7,18 @@ prepare(async ({ projectDep, plugin }) => {
 
 define(async ({ script, require }) => {
 
-	script('sayHi', async (...message) => {
+	script('sayHi', async (argv) => {
 
+		let message = argv['_'];
 		if (message.length === 0) {
 			throw new Error("🐮 please define something to cow")
 		}
 
 		const cowsay = require('cowsay');
 
-		console.log(cowsay.say({
+		return cowsay.say({
 			text: message.join(' ')
-		}));
+		});
 	});
 
 })

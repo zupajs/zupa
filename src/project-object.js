@@ -30,6 +30,7 @@ async function createProjectObject(__filename, __dirname) {
 		__dirname,
 		events,
 		log,
+		chalk,
 		on(eventName, cb) {
 			return events.on(eventName, cb)
 		},

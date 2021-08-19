@@ -1,10 +1,13 @@
 import { Chalk } from 'chalk';
 import * as minimist from 'minimist';
+import { ParsedArgs } from 'minimist';
 import * as Emittery from 'emittery';
 
 
 export interface ScriptDefinition {
-	(...params: string[]): void | Promise<void>;
+	(argv: ParsedArgs): void | Promise<any>;
+
+	route(argv: ParsedArgs, routes: Record<string, ScriptDefinition>)
 }
 
 export interface ScriptRegistryApi {
@@ -41,7 +44,7 @@ export interface ProjectObject {
 
 export type PrepareContext = { plugin: PluginLoadInstruction } &
 	DependencyRegistryPrepareApi &
-	{project: ProjectObject};
+	{ project: ProjectObject };
 
 export interface PrepareCallback {
 	(context: PrepareContext): (void | Promise<void>);
@@ -111,6 +114,7 @@ export interface DependencyRegistryPrepareApi {
 
 export interface PackageManager {
 	getAvailableVersions(packageName: string): Promise<string[]>;
+
 	install(deps: string[]): Promise<void>;
 
 	toString(): string;
@@ -121,6 +125,7 @@ export interface DependencyRegistry {
 	controller: DependencyRegistryController;
 	prepareApi: DependencyRegistryPrepareApi;
 	defineApi: DependencyRegistryDefineApi;
+
 	setPackageManager(pm: PackageManager): void;
 }
 

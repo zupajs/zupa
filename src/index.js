@@ -34,9 +34,6 @@ module.exports.main = async function main() {
 		// TODO 16-Aug-2021/zslengyel: better error handling
 		await projectObject.log.error(e.message + '\n\n' + e.stack)
 
-		// TODO 19-Aug-2021/zslengyel: fallback until logging works
-		console.error(e);
-
 		exitCode = 1;
 
 	}

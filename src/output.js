@@ -6,6 +6,10 @@ const fs = require('fs')
 
 const formatResult = message => {
 	// TODO 19-Aug-2021/zslengyel: handle sophsticated
+
+	if (typeof message === 'string') {
+		return message
+	}
 	return JSON.stringify(message, null, 3);
 };
 
@@ -71,7 +75,6 @@ const Output = ({ project }) => {
 		lastMessage = logEntries[logEntries.length - 1]
 	}
 
-	// TODO format
 	const message = formatLogEntry(lastMessage)
 
 	if (project.config.get().verbose) {

@@ -1,9 +1,13 @@
 define(({ config, script }) => {
 
-	script('config', async (...params) => {
+	script('config', async (argv) => {
 
-		return await script.route(params, {
-			async default() {
+		return await script.route(argv, {
+			async default(argv) {
+
+				if (argv.short) {
+					return 'TODO short'
+				}
 				return config.get()
 			}
 		})

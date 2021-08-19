@@ -1,7 +1,7 @@
 const { resolve } = require('path');
 const { createRequire } = require("module");
 
-function createPreparer(projectObject, __dirname, loadPlugin) {
+function createPreparer(project, __dirname, loadPlugin) {
 	let prepareBuilder = null;
 
 	// array of promises
@@ -21,22 +21,21 @@ function createPreparer(projectObject, __dirname, loadPlugin) {
 					// TODO support more
 					const pluginPath = resolve(__dirname, path)
 
-					const pluginLoading = loadPlugin(pluginPath, projectObject);
+					const pluginLoading = loadPlugin(pluginPath, project);
 					// avoid accidental missing await on caller side
 					pluginLoads.push(pluginLoading);
 
 					await pluginLoading
 				};
 
-				const require = createRequire(projectObject.__filename);
+				const require = createRequire(project.__filename);
 
 				await prepareBuilder({
 					require,
-					config: projectObject.config,
-					log: projectObject.log,
 					plugin,
-					project: projectObject,
-					...projectObject.dependencyRegistry.prepareApi
+					...project.dependencyRegistry.prepareApi,
+					...project,
+					project,
 				})
 
 				await Promise.all(pluginLoads)

@@ -1,8 +1,5 @@
 const { updatePackageJson } = require('../package-json');
 const { groupBy } = require('lodash')
-const { shortenPath } = require('../paths')
-const { __zupaDirname } = require("../zupa-dir");
-const chalk = require('chalk')
 
 prepare(({ projectDep }) => {
 	projectDep('rimraf@3.0.2')
@@ -21,9 +18,9 @@ define(async ({ project, config, script, log, pkg }) => {
 		})
 	}
 
-	script(depsScriptName, async (...params) => {
-		await script.route(params, {
-			async clear(...params) {
+	script(depsScriptName, async argv =>
+		await script.route(argv, {
+			async clear(argv) {
 				const rimraf = require('rimraf')
 				const { resolve } = require('path')
 
@@ -38,32 +35,32 @@ define(async ({ project, config, script, log, pkg }) => {
 				let deps = project.dependencyRegistry.registry.deps;
 
 				const grouppedDeps = groupBy(deps, 'type')
+				return grouppedDeps
 
-				const depsMessage = Object.keys(grouppedDeps).map(groupName => {
-					const gDeps = grouppedDeps[groupName];
-
-					return {
-						name: groupName,
-						deps: gDeps.map(dep => {
-							const source = shortenPath(__zupaDirname, shortenPath(project.__dirname, dep.source, '~'), '@zupa');
-							return `${chalk.green(`${dep.packageName}@${dep.version}`)} ${chalk.grey(`from ${source}`)}`;
-						})
-					}
-				}).map(group => {
-					return `${chalk.underline(group.name)}\n  ${group.deps.join('\n  ')}`
-				}).join('\n')
-
-				log.info(depsMessage)
+				// TODO 19-Aug-2021/zslengyel: decide what output format would be sufficient
+				//const depsMessage = Object.keys(grouppedDeps).map(group => {
+				//	const gDeps = grouppedDeps[group];
+				//
+				//	return {
+				//		group,
+				//		deps: gDeps.map(dep => {
+				//			const source = shortenPath(__zupaDirname, shortenPath(project.__dirname, dep.source, '~'), '@zupa');
+				//			return `${dep.packageName}@${dep.version} from ${source}`;
+				//		})
+				//	}
+				//})
+				//
+				//return depsMessage
 			},
 
-			async default(...params) {
+			async default(argv) {
 				const depsController = project.dependencyRegistry.controller;
 
 				await depsController.addDepsToPackageJson(pkg)
 
 				await depsController.installDeps();
 
-				log.info(`${chalk.green.bold('✅️')} Packages are up-to-date`)
+				return `✅️ Packages are up-to-date`
 			},
 
 			async emitPackageJson() {
@@ -78,8 +75,5 @@ define(async ({ project, config, script, log, pkg }) => {
 				updatePackageJson(pkg, project.__dirname);
 			}
 
-		})
-
-
-	})
+		}))
 })

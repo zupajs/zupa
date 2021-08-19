@@ -17,14 +17,14 @@ define(({ script, project, require }) => {
 		})))
 
 		//print
-		p.printTable();
+		return p.render();
 	}
 
-	script('scripts', async function scriptsScript(...params) {
+	script('scripts', async function scriptsScript(argv) {
 		const registry = project.scriptRegistry.registry;
-		await script.route(params, {
-			ls(command) {
-				listScripts(registry)
+		return await script.route(argv, {
+			ls() {
+				return listScripts(registry)
 			},
 			default() {
 				throw new Error('missing parameter TODO help')

@@ -18,13 +18,11 @@ function createDefiner(project) {
 				const require = createRequire(project.__filename);
 
 				await defineBuilder({
-					pkg: project.pkg,
-					project: project,
-					config: project.config,
 					require,
-					log,
 					...project.scriptRegistry.api,
-					...project.dependencyRegistry.defineApi
+					...project.dependencyRegistry.defineApi,
+					...project,
+					project
 				});
 			}
 		}
