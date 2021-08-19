@@ -11,11 +11,14 @@ define(async ({ project, config, script, log, pkg }) => {
 
 	const depsScriptName = 'deps';
 
-	config.patch({
-		scripts: {
-			default: depsScriptName
-		}
-	})
+	if (config.get().scripts.default === '') {
+		// override if not defined
+		config.patch({
+			scripts: {
+				default: depsScriptName
+			}
+		})
+	}
 
 	script(depsScriptName, async (...params) => {
 		await script.route(params, {

@@ -1,4 +1,5 @@
 const merge = require('deepmerge')
+const rc = require('rc')
 
 const defaultConfig = {
 	scripts: {
@@ -12,9 +13,7 @@ const defaultConfig = {
 function createConfig(argv) {
 	// TODO 17-Aug-2021/zslengyel: handle argv
 
-	let config = {
-		...defaultConfig
-	};
+	let config = rc('zupa', defaultConfig)
 
 	return {
 		get() {
