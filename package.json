@@ -8,7 +8,10 @@
 		"test:dev": "tap testing/tests/* --watch",
 		"lint": "eslint zupa.js src/**/* testing/**/*"
 	},
-	"keywords": [],
+	"keywords": [
+		"project-management",
+		"dependency-manager"
+	],
 	"author": "Zsolt Lengyel",
 	"license": "MIT",
 	"bin": {
