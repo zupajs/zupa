@@ -1,5 +1,5 @@
 const tap = require('tap')
-require('./setup')
+require('../setup')
 
 tap.test('output considers output.forceTTYMode flag', async t => {
 
@@ -13,7 +13,7 @@ tap.test('output considers output.forceTTYMode flag', async t => {
 
 	const res = await t.zupa(['config'])
 
-	const { stripAnsi } = require('../src/common/strip-ansi')
+	const { stripAnsi } = require('../../src/common/strip-ansi')
 	const rawOut = stripAnsi(res.stdout);
 	const outputLines = rawOut.split('\n')
 	const linesWithNpmPluginLoad = outputLines.filter(line => line.includes('🔌 load plugin: @zupa/core-plugins/npm.plugin.js'))

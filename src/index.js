@@ -5,7 +5,7 @@ const { createProjectObject } = require("./project-object");
 const { normalizePluginPath } = require("./paths");
 const { attachOutput } = require("./output");
 
-module.exports.main = async function main(defaultPackageFile = './package.js') {
+async function main(defaultPackageFile = './package.js') {
 
 	process.on('uncaughtException', function (e) {
 		console.error('uncaughtException', e)
@@ -66,4 +66,8 @@ async function loadPackageFile(project) {
 	await loadPlugin(project.__filename, project, {}, true);
 
 	await project.events.emitSerial('prepare:after');
+}
+
+module.exports = {
+	main
 }

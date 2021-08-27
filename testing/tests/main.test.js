@@ -1,6 +1,6 @@
 const tap = require('tap')
 const { resolve } = require('path')
-require('./setup')
+require('../setup')
 
 tap.test('test project created', async t => {
 	t.equal(t.project.path, resolve(process.cwd(), 'test_projects/test_project_created_project'))

@@ -4,9 +4,9 @@
 	"main": "zupa.js",
 	"types": "zupa.d.ts",
 	"scripts": {
-		"test": "tap",
-		"test:dev": "tap --watch",
-		"lint": "eslint zupa.js src/**/* test/**/*"
+		"test": "tap testing/tests/*",
+		"test:dev": "tap testing/tests/* --watch",
+		"lint": "eslint zupa.js src/**/* testing/**/*"
 	},
 	"keywords": [],
 	"author": "Zsolt Lengyel",
@@ -32,7 +32,8 @@
 	},
 	"files": [
 		"*.js",
-		"*.d.ts"
+		"*.d.ts",
+		"src/**/*.js"
 	],
 	"devDependencies": {
 		"@types/node": "^16.6.1",
@@ -40,12 +41,13 @@
 		"console-table-printer": "^2.10.0",
 		"deepmerge": "^4.2.2",
 		"eslint": "^7.32.0",
+		"eslint-plugin-node": "^11.1.0",
 		"execa": "^5.1.1",
 		"tap": "^15.0.9"
 	},
 	"directories": {
 		"example": "examples",
-		"test": "test"
+		"test": "testing"
 	},
 	"repository": {
 		"type": "git",
