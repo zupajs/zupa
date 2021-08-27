@@ -6,8 +6,6 @@ const execa = require("execa");
 tap.beforeEach(t => {
 	const { path, volume } = createTestProject(t.name, {})
 
-	console.log(`'${t.name}' uses project folder`, path)
-
 	t.project = {
 		path,
 		volume(vol) {

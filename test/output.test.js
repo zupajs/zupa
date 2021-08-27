@@ -37,7 +37,6 @@ tap.test('verbose output do not duplicate log entries', async t => {
 	})
 
 	const res = await t.zupa(['config'])
-	console.dir(res)
 
 	t.equal(res.exitCode, 0);
 
