@@ -16,6 +16,10 @@ function createScriptRegistry(config, log) {
 	}
 
 	function scriptApi(name, scriptFn) {
+		if (name in scriptRegistry) {
+			throw new Error(`'${name}' script is already defined`)
+		}
+
 		log(logColor(`Define script: ${chalk.bgBlue(name)}`))
 		scriptRegistry[name] = scriptFn
 	}
@@ -62,7 +66,7 @@ function createScriptRegistry(config, log) {
 				}
 				else {
 					const scriptArgv = minimist(scriptFlags);
-					return await runScript(config.get().scripts.default, scriptFlags)
+					return await runScript(config.get().scripts.default, scriptArgv)
 				}
 			},
 

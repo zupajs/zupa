@@ -31,7 +31,10 @@ const formatLogEntry = (logEntry) => {
 }
 
 
-function isPipedOut() {
+function isPipedOut(forceTTYMode) {
+	if (forceTTYMode) {
+		return false;
+	}
 	const stats = fs.fstatSync(1)
 	return stats.isFIFO() || !process.stdout.isTTY
 }
@@ -44,8 +47,10 @@ const Output = ({ project }) => {
 
 		const logEvents = ['output:log:result', 'output:log:error'];
 
+		const forceTTYMode = project.config.get().output?.forceTTYMode || false;
+
 		// detect if the output is redirected in bash
-		if (!isPipedOut()) {
+		if (!isPipedOut(forceTTYMode)) {
 			const verboseLogEvents = ['output:log', 'output:log:info',]
 			logEvents.push(...verboseLogEvents)
 		}

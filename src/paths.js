@@ -1,8 +1,14 @@
 const { lstatSync, existsSync } = require("fs");
 const { resolve } = require("path");
+const { __zupaDirname } = require('./zupa-dir')
+
+function shortenZupaPath(path) {
+	return path.replace(__zupaDirname, '@zupa');
+}
 
 function shortenPath(baseDir, projectPath, replace = '') {
-	return projectPath.replace(baseDir, replace)
+	let shortProjectPath = projectPath.replace(baseDir, replace);
+	return shortenZupaPath(shortProjectPath)
 }
 
 function normalizePluginPath(pluginPath) {

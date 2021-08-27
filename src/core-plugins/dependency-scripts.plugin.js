@@ -20,7 +20,7 @@ define(async ({ project, config, script, log, pkg }) => {
 
 	script(depsScriptName, async argv =>
 		await script.route(argv, {
-			async clear(argv) {
+			async clear() {
 				const rimraf = require('rimraf')
 				const { resolve } = require('path')
 

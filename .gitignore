@@ -1,2 +1,4 @@
 .idea
 node_modules
+test_projects
+.nyc_output

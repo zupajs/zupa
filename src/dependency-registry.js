@@ -35,14 +35,13 @@ function createDependencyRegistry(__dirname, __filename, project) {
 
 	const projectRequire = createRequire(__filename);
 
-	const addDep = (npmPackage, type) => {
-		const source = project.activePlugin && project.activePlugin.path;
+	const addDep = (npmPackage, type, source) => {
 
 		if (!source) {
 			throw new Error(`Loading dependency ${npmPackage} outside of a plugin`)
 		}
 
-		log(logColor(`${logIcon} ${npmPackage} '${type}' from ${source} `));
+		log(logColor(`${logIcon} ${npmPackage} '${type}' from ${source.file}:${source.line}:${source.pos} `));
 
 		let version = '';
 		let packageName = npmPackage;
@@ -91,12 +90,10 @@ function createDependencyRegistry(__dirname, __filename, project) {
 				suggestions.push(`${dep.packageName}@${version}`)
 			}
 
-			log(chalk.red(`
-Missing versions for npm packages.
+			throw new Error(`Missing versions for npm packages.
 Latest versions of packages:
 \t${suggestions.join('\n\t')}
-			`))
-			process.exit(2)
+			`)
 		}
 	}
 
@@ -199,6 +196,21 @@ Latest versions of packages:
 		await controller.installProjectDeps();
 	})
 
+	function getCallerSourcePos() {
+
+		const stackError = new Error('get stack')
+		const stack = stackError.stack;
+		const callerLineCharCodes = stack.split('\n')[3].split(':')
+
+		const file = project.activePlugin && project.activePlugin.path;
+
+		return {
+			file,
+			line: callerLineCharCodes[1],
+			pos: callerLineCharCodes[2]
+		}
+	}
+
 	return {
 		registry,
 		controller,
@@ -208,16 +220,16 @@ Latest versions of packages:
 		},
 		prepareApi: {
 			projectDep(npmPackage) {
-				addDep(npmPackage, DepType.projectDep)
+				addDep(npmPackage, DepType.projectDep, getCallerSourcePos())
 			}
 		},
 		defineApi: {
 			dep(npmPackage) {
-				addDep(npmPackage, DepType.dep)
+				addDep(npmPackage, DepType.dep, getCallerSourcePos())
 			},
 
 			devDep(npmPackage) {
-				addDep(npmPackage, DepType.devDep)
+				addDep(npmPackage, DepType.devDep, getCallerSourcePos())
 			}
 		}
 	}

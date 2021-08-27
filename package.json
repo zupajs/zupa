@@ -4,19 +4,21 @@
 	"main": "zupa.js",
 	"types": "zupa.d.ts",
 	"scripts": {
-		"test": "ava"
+		"test": "tap",
+		"test:dev": "tap --watch"
 	},
 	"keywords": [],
 	"author": "Zsolt Lengyel",
 	"license": "MIT",
 	"bin": {
-		"zupa": "zupa.mjs"
+		"zupa": "zupa.js"
 	},
 	"engines": {
 		"node": ">= 14.8.0"
 	},
 	"dependencies": {
 		"@types/minimist": "1.2.1",
+		"@types/tap": "^15.0.5",
 		"chalk": "4.1.1",
 		"emittery": "0.9.2",
 		"ink": "^3.0.9",
@@ -28,20 +30,20 @@
 		"strip-ansi": "^7.0.0"
 	},
 	"files": [
-		"*.mjs",
 		"*.js",
 		"*.d.ts"
 	],
 	"devDependencies": {
 		"@types/node": "^16.6.1",
-		"ava": "^3.15.0",
 		"check-engines": "^1.5.0",
 		"console-table-printer": "^2.10.0",
-		"deepmerge": "^4.2.2"
+		"deepmerge": "^4.2.2",
+		"execa": "^5.1.1",
+		"tap": "^15.0.9"
 	},
 	"directories": {
 		"example": "examples",
-		"test": "__tests__"
+		"test": "test"
 	},
 	"repository": {
 		"type": "git",

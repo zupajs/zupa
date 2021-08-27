@@ -5,9 +5,7 @@ const { createProjectObject } = require("./project-object");
 const { normalizePluginPath } = require("./paths");
 const { attachOutput } = require("./output");
 
-const defaultPackageFile = './package.js';
-
-module.exports.main = async function main() {
+module.exports.main = async function main(defaultPackageFile = './package.js') {
 
 	process.on('uncaughtException', function (e) {
 		console.error('uncaughtException', e)
@@ -27,20 +25,26 @@ module.exports.main = async function main() {
 			await projectObject.run()
 		}
 		else {
-			console.error('No package.js found in current folder')
+			throw new Error(`No package.js found in current folder: ${process.cwd()}`)
 		}
 	}
 	catch (e) {
-		// TODO 16-Aug-2021/zslengyel: better error handling
-		await projectObject.log.error(e.message + '\n\n' + e.stack)
-
+		// TODO 27-Aug-2021/zslengyel: get exitCode from error if possible
 		exitCode = 1;
+
+		if (projectObject && projectObject.log) {
+			// TODO 16-Aug-2021/zslengyel: better error handling
+			await projectObject.log.error(e.message + '\n\n' + e.stack)
+		} else {
+			throw e; // throw error towards as there is nothing that handles
+		}
 
 	}
 	finally {
-		await projectObject.events.emitSerial('finally')
-
-		process.exit(exitCode)
+		if (projectObject) {
+			await projectObject.events.emitSerial('finally')
+			process.exit(exitCode)
+		}
 	}
 }
 

@@ -5,6 +5,9 @@ const defaultConfig = {
 	scripts: {
 		default: ''
 	},
+	output: {
+		forceTTYMode: false
+	},
 	deps: {
 		removePackageJson: true
 	}
