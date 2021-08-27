@@ -68,7 +68,7 @@ prepare(async ({ project, log, config }) => {
 			const originalNpmJson = npm.config.get('json')
 			npm.config.set('json', true)
 
-			npm.commands.view([dep, 'versions'], function (err, data) {
+			npm.commands.view([dep, 'versions'], function (err) {
 				// log errors or data
 				if (err) {
 					rej(err)

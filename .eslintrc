@@ -1,0 +1,11 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "node": true,
+    "es2020": true
+  },
+  "globals": {
+    "prepare": "readonly",
+    "define": "readonly"
+  }
+}

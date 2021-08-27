@@ -53,7 +53,7 @@ define(async ({ project, config, script, log, pkg }) => {
 				//return depsMessage
 			},
 
-			async default(argv) {
+			async default() {
 				const depsController = project.dependencyRegistry.controller;
 
 				await depsController.addDepsToPackageJson(pkg)
