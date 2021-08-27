@@ -4,7 +4,7 @@
 	"main": "zupa.js",
 	"types": "zupa.d.ts",
 	"scripts": {
-		"test": "tap testing/tests/*",
+		"test": "tap testing/tests/* --no-coverage",
 		"test:dev": "tap testing/tests/* --watch",
 		"lint": "eslint zupa.js src/**/* testing/**/*"
 	},
