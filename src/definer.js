@@ -10,7 +10,7 @@ function createDefiner(project) {
 			defineBuilder = builder;
 		},
 		controller: {
-			async run() {
+			async run(params = {}) {
 				if (defineBuilder === null) {
 					return;
 				}
@@ -22,7 +22,8 @@ function createDefiner(project) {
 					...project.scriptRegistry.api,
 					...project.dependencyRegistry.defineApi,
 					...project,
-					project
+					project,
+					params
 				});
 			}
 		}

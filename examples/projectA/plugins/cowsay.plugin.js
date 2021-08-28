@@ -1,17 +1,17 @@
 /// <reference type="../../zupd.d.ts" />
 
-prepare(async ({ projectDep, plugin }) => {
-	await projectDep('cowsay@1.5.0')
+prepare(async ({ projectDep, params }) => {
+	await projectDep('cowsay@' + params.cowsayVersion)
 })
 
-
-define(async ({ script, require }) => {
+define(async ({ script, require, params }) => {
 
 	script('sayHi', async (argv) => {
 
 		let message = argv['_'];
 		if (message.length === 0) {
-			throw new Error("🐮 please define something to cow")
+			message = [params.defaultText]
+			// throw new Error("🐮 please define something to cow")
 		}
 
 		const cowsay = require('cowsay');

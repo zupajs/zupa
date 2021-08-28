@@ -12,16 +12,16 @@ function createPreparer(project, __dirname, loadPlugin) {
 			prepareBuilder = cb;
 		},
 		controller: {
-			async run() {
+			async run(params = {}) {
 				if (prepareBuilder === null) {
 					return;
 				}
 
-				const plugin = async (path) => {
+				const plugin = async (path, pluginParams) => {
 					// TODO support more
 					const pluginPath = resolve(__dirname, path)
 
-					const pluginLoading = loadPlugin(pluginPath, project);
+					const pluginLoading = loadPlugin(pluginPath, project, pluginParams);
 					// avoid accidental missing await on caller side
 					pluginLoads.push(pluginLoading);
 
@@ -36,6 +36,7 @@ function createPreparer(project, __dirname, loadPlugin) {
 					...project.dependencyRegistry.prepareApi,
 					...project,
 					project,
+					params
 				})
 
 				await Promise.all(pluginLoads)

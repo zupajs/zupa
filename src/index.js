@@ -63,7 +63,7 @@ async function prepareProject(filepath) {
 
 async function loadPackageFile(project) {
 
-	await loadPlugin(project.__filename, project, true);
+	await loadPlugin(project.__filename, project, {}, true);
 
 	await project.events.emitSerial('prepare:after');
 }

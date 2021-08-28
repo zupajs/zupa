@@ -7,7 +7,7 @@ const { shortenPath, normalizePluginPath } = require("./paths");
 
 const logColor = chalk.blueBright
 
-async function loadPlugin(originalPluginPath, project, isRootPlugin = false) {
+async function loadPlugin(originalPluginPath, project, pluginParams, isRootPlugin = false) {
 
 	const { log } = project;
 
@@ -49,10 +49,10 @@ async function loadPlugin(originalPluginPath, project, isRootPlugin = false) {
 		project.activePlugin = null;
 	}
 
-	await pluginActivation(async () => await prepareController.run());
+	await pluginActivation(async () => await prepareController.run(pluginParams));
 
 	project.on('prepare:after', async () => {
-		await pluginActivation(async () => await defineController.run());
+		await pluginActivation(async () => await defineController.run(pluginParams));
 	})
 }
 

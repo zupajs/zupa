@@ -20,7 +20,7 @@ function createScriptRegistry(config, log) {
 			throw new Error(`'${name}' script is already defined`)
 		}
 
-		log(logColor(`Define script: ${chalk.bgBlue(name)}`))
+		log(logColor(`Define script: ${chalk.bold(name)}`))
 		scriptRegistry[name] = scriptFn
 	}
 

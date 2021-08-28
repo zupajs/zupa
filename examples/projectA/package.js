@@ -2,11 +2,13 @@ prepare(async ({ projectDep, plugin, config }) => {
 
 	config.patch({
 		deps: {
-			removePackageJson: false
+			removePackageJson: true
 		}
 	})
 
-	await plugin('./plugins')
+	await plugin('./plugins', {
+		cowsayVersion: '1.5.0'
+	})
 })
 
 define(async ({ pkg, dep, devDep }) => {
