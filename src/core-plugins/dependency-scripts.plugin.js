@@ -5,75 +5,79 @@ prepare(({ projectDep }) => {
 	projectDep('rimraf@3.0.2')
 })
 
-define(async ({ project, config, script, log, pkg }) => {
+define(async ({ project, config, $, log, pkg }) => {
 
 	const depsScriptName = 'deps';
 
-	if (config.get().scripts.default === '') {
+	if (config.get().commands.default === '') {
 		// override if not defined
 		config.patch({
-			scripts: {
+			commands: {
 				default: depsScriptName
 			}
 		})
 	}
 
-	script(depsScriptName, async argv =>
-		await script.route(argv, {
-			async clear() {
-				const rimraf = require('rimraf')
-				const { resolve } = require('path')
+	const depsCommand = $(depsScriptName)({
+		async run() {
+			const depsController = project.dependencyRegistry.controller;
 
-				const node_modules_path = resolve(project.__dirname, 'node_modules');
+			await depsController.addDepsToPackageJson(pkg)
 
-				log.info(`rm -rf ${node_modules_path}`)
+			await depsController.installDeps();
 
-				rimraf.sync(node_modules_path)
-			},
+			return `✅️ Packages are up-to-date`
+		}
+	});
 
-			async list() {
-				let deps = project.dependencyRegistry.registry.deps;
+	depsCommand.$`clear`({
+		async run() {
+			const rimraf = require('rimraf')
+			const { resolve } = require('path')
 
-				const grouppedDeps = groupBy(deps, 'type')
-				return grouppedDeps
+			const node_modules_path = resolve(project.__dirname, 'node_modules');
 
-				// TODO 19-Aug-2021/zslengyel: decide what output format would be sufficient
-				//const depsMessage = Object.keys(grouppedDeps).map(group => {
-				//	const gDeps = grouppedDeps[group];
-				//
-				//	return {
-				//		group,
-				//		deps: gDeps.map(dep => {
-				//			const source = shortenPath(__zupaDirname, shortenPath(project.__dirname, dep.source, '~'), '@zupa');
-				//			return `${dep.packageName}@${dep.version} from ${source}`;
-				//		})
-				//	}
-				//})
-				//
-				//return depsMessage
-			},
+			log.info(`rm -rf ${node_modules_path}`)
 
-			async default() {
-				const depsController = project.dependencyRegistry.controller;
+			rimraf.sync(node_modules_path)
+		}
+	})
 
-				await depsController.addDepsToPackageJson(pkg)
+	depsCommand.$`list`({
+		async run() {
+			let deps = project.dependencyRegistry.registry.deps;
 
-				await depsController.installDeps();
+			const grouppedDeps = groupBy(deps, 'type')
+			return grouppedDeps
 
-				return `✅️ Packages are up-to-date`
-			},
+			// TODO 19-Aug-2021/zslengyel: decide what output format would be sufficient
+			//const depsMessage = Object.keys(grouppedDeps).map(group => {
+			//	const gDeps = grouppedDeps[group];
+			//
+			//	return {
+			//		group,
+			//		deps: gDeps.map(dep => {
+			//			const source = shortenPath(__zupaDirname, shortenPath(project.__dirname, dep.source, '~'), '@zupa');
+			//			return `${dep.packageName}@${dep.version} from ${source}`;
+			//		})
+			//	}
+			//})
+			//
+			//return depsMessage
+		}
+	})
 
-			async emitPackageJson() {
-				config.patch({
-					deps: {
-						removePackageJson: false
-					}
-				});
+	depsCommand.$`emitPackageJson`({
+		async run() {
+			config.patch({
+				deps: {
+					removePackageJson: false
+				}
+			});
 
-				await project.dependencyRegistry.controller.addDepsToPackageJson(pkg)
+			await project.dependencyRegistry.controller.addDepsToPackageJson(pkg)
 
-				updatePackageJson(pkg, project.__dirname);
-			}
-
-		}))
+			updatePackageJson(pkg, project.__dirname);
+		}
+	})
 })

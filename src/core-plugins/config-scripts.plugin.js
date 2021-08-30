@@ -2,35 +2,30 @@ prepare(({ projectDep }) => {
 	projectDep('jsonpath-plus@6.0.1')
 })
 
-define(({ config, script }) => {
+define(({ config, $ }) => {
 
-	script('config', async (argv) => {
-
-		return await script.route(argv, {
-			get(argv) {
-				const configName = argv._
-				if (configName.length !== 1) {
-					throw new Error('Please define one and only one config param to get')
-				}
-
-				const { JSONPath } = require('jsonpath-plus');
-
-				return JSONPath({
-					path: configName[0],
-					json: config.get(),
-					wrap: false,
-				})
-			},
-
-			async default(argv) {
-
-				if (argv.short) {
-					return 'TODO short'
-				}
-				return config.get()
+	$`config`({
+		run(argv, options) {
+			if (options.short) {
+				return 'TODO short'
 			}
-		})
+			return config.get()
+		}
+	})
+	.$`get <expression>`({
+		args: {
+		},
+		run(args) {
+			const { expression } = args;
 
+			const { JSONPath } = require('jsonpath-plus');
+
+			return JSONPath({
+				path: expression,
+				json: config.get(),
+				wrap: false,
+			})
+		}
 	})
 
 })

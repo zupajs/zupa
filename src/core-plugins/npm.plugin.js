@@ -11,6 +11,7 @@ prepare(async ({ project, log, config }) => {
 
 	if (!log.isVerbose) {
 		// for npm calls
+		// TODO 30-Aug-2021/zslengyel: find better way that does not affect runtime
 		process.argv = [...process.argv, '--silent']
 	}
 

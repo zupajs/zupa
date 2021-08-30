@@ -18,9 +18,9 @@ function createDefiner(project) {
 
 				await defineBuilder({
 					require,
-					...project.scriptRegistry.api,
 					...project.dependencyRegistry.defineApi,
 					...project,
+					$: project.commands.subcommand,
 					project,
 					params
 				});

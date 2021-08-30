@@ -1,33 +1,6 @@
 import { Chalk } from 'chalk';
 import * as minimist from 'minimist';
-import { ParsedArgs } from 'minimist';
 import * as Emittery from 'emittery';
-
-
-export interface ScriptDefinition {
-	(argv: ParsedArgs): void | Promise<any>;
-
-	route(argv: ParsedArgs, routes: Record<string, ScriptDefinition>)
-}
-
-export interface ScriptRegistryApi {
-	script(name: string, scriptFn: ScriptDefinition): void;
-}
-
-export interface ScriptRegistryController {
-	run(): Promise<void>
-}
-
-export interface ScriptRegistryStore {
-	[name: string]: (...params) => void | Promise<void>;
-}
-
-export interface ScriptRegistry {
-	api: ScriptRegistryApi;
-	controller: ScriptRegistryController;
-	registry: ScriptRegistryStore;
-}
-
 
 export interface ProjectObject {
 	argv: minimist.ParsedArgs;
@@ -37,7 +10,6 @@ export interface ProjectObject {
 	on: any; // TODO 17-Aug-2021/zslengyel:
 	emit: any; // TODO 17-Aug-2021/zslengyel:
 	dependencyRegistry: DependencyRegistry;
-	scriptRegistry: ScriptRegistry;
 
 	run(): Promise<void>
 }
@@ -130,11 +102,49 @@ export interface DependencyRegistry {
 	setPackageManager(pm: PackageManager): void;
 }
 
+export interface CommandArgumentsDefinition {
+	required?: boolean;
+}
 
-export type DefineContext = ScriptRegistryApi &
-	{ project: ProjectObject } &
+export interface CommandArgumentsDefinitions extends Record<string, CommandArgumentsDefinition> {}
+
+export interface CommandOptionsDefinitions {
+	// TODO 30-Aug-2021/zslengyel:
+}
+
+export interface CommandConfig {
+	args: CommandArgumentsDefinitions;
+	options: CommandOptionsDefinitions;
+	run(argv: Record<string, any>, options: Record<string, any>): Promise<any> | any;
+}
+
+export interface CommandConfigurator {
+	(config: CommandConfig): Command;
+}
+
+export type SubcommandFunction = CommandBuilder;
+
+export interface Command {
+	execute(args: string[], options: Record<string, any>);
+	commandName: string;
+	config: CommandConfig;
+	subcommands: Command[];
+	subcommand: SubcommandFunction;
+	$: SubcommandFunction;
+	matchingCommandName(): string;
+	findMatching(args: []): Command | undefined;
+}
+
+export interface CommandBuilder {
+	(commandName: string): CommandConfigurator;
+}
+
+
+export type DefineContext = { project: ProjectObject } &
 	{ log: Log } &
 	{ pkg: any; } &
+	{ $: CommandBuilder } &
+	{ commands: Command } &
 	DependencyRegistryDefineApi;
 
 export interface DefineBuilder {
