@@ -109,7 +109,8 @@ export interface DependencyRegistryDefineApi {
 }
 
 export interface DependencyRegistryPrepareApi {
-	projectDep(npmPackage): void;
+	projectDep(npmPackage: string): void;
+	projectDeps(packagesMap: Record<string, string>): void;
 }
 
 export interface PackageManager {

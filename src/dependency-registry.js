@@ -221,6 +221,15 @@ Latest versions of packages:
 		prepareApi: {
 			projectDep(npmPackage) {
 				addDep(npmPackage, DepType.projectDep, getCallerSourcePos())
+			},
+			projectDeps(npmPackagesMap) {
+				if (typeof npmPackagesMap !== 'object') {
+					throw new Error('Dependencies should be defined in object (or map)')
+				}
+				const source = getCallerSourcePos()
+				for (const [packageName, version] of Object.entries(npmPackagesMap)) {
+					addDep(`${packageName}@${version}`, DepType.projectDep, source)
+				}
 			}
 		},
 		defineApi: {
