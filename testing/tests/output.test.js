@@ -1,9 +1,9 @@
-const tap = require('tap')
-require('../setup')
+const test = require('ava')
+const setup = require("../setup");
 
-tap.test('output considers output.forceTTYMode flag', async t => {
-
-	t.project.volume({
+test('output considers output.forceTTYMode flag', async t => {
+	const { project, zupa } = setup(t)
+	project.volume({
 		'./package.js': ``,
 		'.zuparc': `
 			[output]
@@ -11,19 +11,19 @@ tap.test('output considers output.forceTTYMode flag', async t => {
 		`
 	})
 
-	const res = await t.zupa(['config'])
+	const res = await zupa(['config'])
 
 	const { stripAnsi } = require('../../src/common/strip-ansi')
 	const rawOut = stripAnsi(res.stdout);
 	const outputLines = rawOut.split('\n')
 	const linesWithNpmPluginLoad = outputLines.filter(line => line.includes('🔌 load plugin: @zupa/core-plugins/npm.plugin.js'))
 
-	t.equal(linesWithNpmPluginLoad.length, 1, 'One log entry is present only once');
+	t.is(linesWithNpmPluginLoad.length, 1, 'One log entry is present only once');
 })
 
-tap.test('verbose output do not duplicate log entries', async t => {
-
-	t.project.volume({
+test('verbose output do not duplicate log entries', async t => {
+	const { project, zupa } = setup(t)
+	project.volume({
 		'./package.js': `
 		define(({script}) => {
 			
@@ -36,8 +36,8 @@ tap.test('verbose output do not duplicate log entries', async t => {
 		`
 	})
 
-	const res = await t.zupa(['config'])
+	const res = await zupa(['config'])
 
-	t.equal(res.exitCode, 0);
+	t.is(res.exitCode, 0);
 
 })

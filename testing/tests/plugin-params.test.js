@@ -1,8 +1,9 @@
-const tap = require('tap')
-require('./setup')
+const test = require('ava')
+const setup = require("../setup");
 
-tap.test('plugin define gets params', async t => {
-	t.project.volume({
+test('plugin define gets params', async t => {
+	const { project, zupa } = setup(t)
+	project.volume({
         './echo.plugin.js': `
         
             define(({ script, params }) => {
@@ -23,14 +24,15 @@ tap.test('plugin define gets params', async t => {
         `
 	})
 
-	const res = await t.zupa(['echo'])
+	const res = await zupa(['echo'])
 
-	t.equal(res.stdout, "Hello");
+	t.is(res.stdout, "Hello");
 })
 
 
-tap.test('plugin prepare gets params', async t => {
-	t.project.volume({
+test('plugin prepare gets params', async t => {
+	const { project, zupa } = setup(t)
+	project.volume({
         './echo.plugin.js': `
         
             prepare(({ config, params }) => {
@@ -53,11 +55,11 @@ tap.test('plugin prepare gets params', async t => {
         `
 	})
 
-	const res = await t.zupa(['config get customValue'], {
+	const res = await zupa(['config', 'get', '$.customValue'], {
         env: {
             ZUPA_customValue: 'Hello'
         }
     })
 
-	t.equal(res.stdout, "Hello");
+	t.is(res.stdout, "Hello");
 })
