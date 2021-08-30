@@ -4,7 +4,7 @@
 	"main": "zupa.js",
 	"types": "zupa.d.ts",
 	"scripts": {
-		"test": "ava testing/tests/*",
+		"test": "nyc ava testing/tests/*",
 		"test:dev": "ava testing/tests/* --watch",
 		"lint": "eslint zupa.js src/**/* testing/**/*"
 	},
@@ -48,6 +48,7 @@
 		"eslint": "^7.32.0",
 		"eslint-plugin-node": "^11.1.0",
 		"execa": "^5.1.1",
+		"nyc": "^15.1.0",
 		"tap": "^15.0.9"
 	},
 	"directories": {
@@ -62,5 +63,12 @@
 		"url": "https://github.com/zupajs/zupa/issues"
 	},
 	"homepage": "https://github.com/zupajs/zupa#readme",
-	"description": ""
+	"description": "",
+	"nyc": {
+		"include": [
+			"zupa.js",
+			"src/**"
+		]
+	}
+
 }
