@@ -1,7 +1,7 @@
 const test = require('ava')
 const setup = require('../setup')
 
-test('config get script uses JSON path expressions', async t => {
+test('config get command uses JSON path expressions', async t => {
 	const { project, zupa } = setup(t)
 
 	project.volume({

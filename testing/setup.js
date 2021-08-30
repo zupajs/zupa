@@ -14,10 +14,12 @@ module.exports = function (t) {
 	};
 
 	const zupa = async (args = [], opts = {}) => {
+		const nodeJs = process.argv[0]
 		const zupa = resolve(process.cwd(), './zupa.js');
-		const res = await execa(zupa, args, {
+
+		const res = await execa(nodeJs, [zupa, ...args], {
 			cwd: path,
-			...opts
+			...opts,
 		})
 		return res;
 	}

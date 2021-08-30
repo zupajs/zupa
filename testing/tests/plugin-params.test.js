@@ -6,9 +6,9 @@ test('plugin define gets params', async t => {
 	project.volume({
         './echo.plugin.js': `
         
-            define(({ script, params }) => {
+            define(({ $, params }) => {
                 
-                script('echo', () => params.text)
+                $('echo')({ run: () => params.text })
 
             })
 
