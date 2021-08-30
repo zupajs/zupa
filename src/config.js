@@ -2,7 +2,7 @@ const merge = require('deepmerge')
 const rc = require('rc')
 
 const defaultConfig = {
-	scripts: {
+	commands: {
 		default: ''
 	},
 	output: {
