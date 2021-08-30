@@ -43,6 +43,7 @@ async function main(defaultPackageFile = './package.js') {
 	finally {
 		if (projectObject) {
 			await projectObject.events.emitSerial('finally')
+			// eslint-disable-next-line no-process-exit
 			process.exit(exitCode)
 		}
 	}
