@@ -1,7 +1,6 @@
 const { createRequire } = require('module')
 
 function createDefiner(project) {
-	const { log } = project;
 
 	let defineBuilder = null;
 
