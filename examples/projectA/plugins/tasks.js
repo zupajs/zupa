@@ -1,7 +1,9 @@
-define(({ script, chalk }) => {
+define(({ $, chalk }) => {
 
-	script('echo', (argv) => {
-		return chalk.bgMagenta.green(argv['_'].toString())
+	$`echo`({
+		run(argv) {
+			return chalk.bgMagenta.green(argv['_'].toString())
+		}
 	})
 
 })
