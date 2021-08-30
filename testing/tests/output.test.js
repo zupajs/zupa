@@ -25,9 +25,11 @@ test('verbose output do not duplicate log entries', async t => {
 	const { project, zupa } = setup(t)
 	project.volume({
 		'./package.js': `
-		define(({script}) => {
+		define(({ $ }) => {
 			
-			script('hello', () => 'hello')
+			$\`hello\`({ 
+				run() { return 'hello' }
+			})
 		})
 		`,
 		'.zuparc': `

@@ -1,5 +1,5 @@
 const React = require('react');
-const { render, Text, Newline } = require('ink');
+const { render, Text, Newline, useStderr } = require('ink');
 const { useState, useEffect, createElement } = React;
 const chalk = require('chalk')
 const fs = require('fs')
@@ -42,18 +42,24 @@ function isPipedOut(forceTTYMode) {
 
 const Output = ({ project }) => {
 	const [logEntries, setLogEntries] = useState([]);
+	const { write: writeStdErr } = useStderr();
 
 	useEffect(() => {
 
-		const logEvents = ['output:log:result', 'output:log:error'];
+		const errorEventName = 'output:log:error';
+		const logEvents = ['output:log:result'];
 
 		const forceTTYMode = project.config.get().output?.forceTTYMode || false;
 
 		// detect if the output is redirected in bash
 		if (!isPipedOut(forceTTYMode)) {
-			const verboseLogEvents = ['output:log', 'output:log:info',]
+			const verboseLogEvents = ['output:log', 'output:log:info']
 			logEvents.push(...verboseLogEvents)
 		}
+
+		project.events.on(errorEventName, async (data) => {
+			writeStdErr(data.message[0])
+		})
 
 		const subscriptions = logEvents.map(eventName => {
 			const subscription = project.events.on(eventName, async (data) => {
