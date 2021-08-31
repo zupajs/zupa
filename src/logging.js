@@ -1,5 +1,6 @@
 
 function createLogger(events, verbose) {
+	const stream = require("stream");
 
 	async function log(...args) {
 		await events.emitSerial('output:log', { level: 'verbose', message: args })
@@ -18,6 +19,13 @@ function createLogger(events, verbose) {
 	log.result = async (output) => {
 		await events.emitSerial('output:log:result', { level: 'result', message: output });
 	}
+
+	log.outStream = new stream.Writable({
+		write: function(chunk, encoding, next) {
+			log.info(chunk.toString());
+			next();
+		}
+	});
 
 	return log;
 }
