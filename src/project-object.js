@@ -24,7 +24,7 @@ async function createProjectObject(__filename, __dirname) {
 
 	log = createLogger(events, config.get().verbose);
 
-	const commands = createRootCommand(config);
+	const commands = createRootCommand(config, log);
 
 	const projectObject = {
 		config,

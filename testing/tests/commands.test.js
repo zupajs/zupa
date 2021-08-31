@@ -23,6 +23,25 @@ test('user can define command with $', async t => {
 	t.is(res.stdout, "meow");
 })
 
+
+test('user can define command with $.is', async t => {
+	const { project, zupa } = setup(t)
+
+	project.volume({
+		'./package.js': `
+			define( ({$}) => {
+				
+				$\`meow\`.is('echo', ['cat'])
+			})
+		`
+	})
+
+	const res = await zupa(['meow'])
+
+	t.is(res.stdout, "cat");
+})
+
+
 test('user can define named argument', async t => {
 	const { project, zupa } = setup(t)
 

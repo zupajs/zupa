@@ -1,4 +1,4 @@
-prepare(async ({ projectDep, plugin, config }) => {
+prepare(async ({ plugin, config }) => {
 
 	config.patch({
 		deps: {
@@ -45,5 +45,7 @@ define(async ({ pkg, dep, devDep, $ }) => {
 			return 'meow ' + args.name
 		}
 	})
+
+	$`test`.is('ava')
 
 })

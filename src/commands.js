@@ -43,7 +43,7 @@ function parseCommandName(expression) {
 	return { commandName, commandArgs }
 }
 
-function createCommand(commandNameExpression, config, parent = null) {
+function createCommand(commandNameExpression, config, parent = null, log) {
 	const subcommands = [];
 
 	const { commandName, commandArgs } = parseCommandName(commandNameExpression)
@@ -66,8 +66,9 @@ function createCommand(commandNameExpression, config, parent = null) {
 
 	function subcommand(commandName) {
 		const rawCommand = typeof commandName === 'string' ? commandName : commandName[0];
-		return (config) => {
-			const command = createCommand(rawCommand, config, commandObject)
+
+		function configurator(config) {
+			const command = createCommand(rawCommand, config, commandObject, log)
 
 			const existingCommand = subcommands.find(subc => subc.commandName === command.commandName);
 
@@ -78,6 +79,26 @@ function createCommand(commandNameExpression, config, parent = null) {
 			subcommands.push(command)
 			return command;
 		}
+
+		configurator.is = function is(oneLinerCommand, commandArgs) {
+
+			return configurator({
+				async run() {
+					const execa = require('execa');
+
+					let execaInvoke = execa(oneLinerCommand, (commandArgs || []), {
+						preferLocal: true
+					});
+					execaInvoke.stdout.pipe(log.outStream);
+
+					const result = await execaInvoke;
+
+					return result.stdout;
+				}
+			})
+		}
+
+		return configurator;
 	}
 
 	function matchArgv(argv) {
@@ -130,7 +151,7 @@ function createCommand(commandNameExpression, config, parent = null) {
 		return Array.from(constructedArgs.entries()).reduce((acc, item, index) => {
 			const [argName, definition] = item;
 			const providedValue = args[index];
-			// TODO 30-Aug-2021/zslengyel: validate
+			// TODO 30-Aug-2021/zslengyel: validate with definition
 			acc[argName] = providedValue;
 			return acc;
 		}, {})
@@ -163,8 +184,8 @@ function createCommand(commandNameExpression, config, parent = null) {
 	return commandObject;
 }
 
-function createRootCommand(config) {
-	const rootCommand = createCommand('', {})
+function createRootCommand(config, log) {
+	const rootCommand = createCommand('', {}, null, log)
 
 	function createOptions() {
 		const args = minimist(process.argv)
