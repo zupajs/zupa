@@ -2,20 +2,41 @@
 	"name": "@zupa/cli",
 	"version": "1.0.0",
 	"description": "",
-	"main": "dist/cli/main.js",
+	"main": "dist/zupa.js",
 	"bin": {
-		"zupa": "dist/cli/main.js"
+		"zupa": "dist/zupa.js"
 	},
 	"scripts": {
-		"start:watch": "tsc --watch",
-		"build": "tsc",
-		"start": "ts-node main.ts",
+		"start": "webpack --watch",
+		"build": "npm run build:webpack",
+		"build:types": "tsc --emitDeclarationOnly",
+		"build:webpack": "webpack",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
+	"files": [
+		"dist/zupa.js",
+		"README.md",
+		"license"
+	],
 	"author": "Zsolt Lengyel",
 	"license": "ISC",
 	"devDependencies": {
+		"@babel/plugin-transform-runtime": "^7.15.0",
+		"@babel/polyfill": "^7.12.1",
+		"@babel/preset-env": "^7.15.0",
+		"@babel/preset-typescript": "^7.15.0",
+		"@types/webpack-dev-server": "^4.0.3",
+		"babel-loader": "^8.2.2",
+		"declaration-bundler-webpack-plugin": "^1.0.3",
+		"ts-loader": "^9.2.5",
 		"ts-node": "^10.2.1",
+		"webpack": "^5.51.1",
+		"webpack-cli": "^4.8.0",
+		"webpack-dev-server": "^4.0.0"
+	},
+	"dependencies": {
+		"@babel/runtime-corejs3": "^7.15.3",
+		"execa": "^5.1.1",
 		"typescript": "^4.4.2"
 	}
 }

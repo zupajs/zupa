@@ -1,3 +1,4 @@
-import { index } from './src/index'
+import { main } from './src/index'
+import { resolve } from 'path';
 
-index()
+main(resolve(process.cwd(), 'package.js'))
