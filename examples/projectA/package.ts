@@ -1,3 +1,5 @@
+import { define, prepare } from '../../packages/core';
+
 prepare(async ({ plugin, config }) => {
 
 	config.patch({
@@ -36,9 +38,7 @@ define(async ({ pkg, dep, devDep, $ }) => {
 		}
 	})
 
-	build.$`myapp`({
-
-	})
+	build.$`myapp`({})
 
 	$`meow <name>`({
 		run(args) {

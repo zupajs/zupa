@@ -1,0 +1,21 @@
+{
+	"name": "@zupa/cli",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/cli/main.js",
+	"bin": {
+		"zupa": "dist/cli/main.js"
+	},
+	"scripts": {
+		"start:watch": "tsc --watch",
+		"build": "tsc",
+		"start": "ts-node main.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Zsolt Lengyel",
+	"license": "ISC",
+	"devDependencies": {
+		"ts-node": "^10.2.1",
+		"typescript": "^4.4.2"
+	}
+}
