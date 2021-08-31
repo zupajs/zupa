@@ -1,0 +1,17 @@
+{
+	"name": "@zupa/core",
+	"version": "1.0.0",
+	"description": "",
+	"main": "dist/index.js",
+	"scripts": {
+		"start:watch": "tsc --watch",
+		"build": "tsc",
+		"start": "ts-node main.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Zsolt Lengyel",
+	"license": "ISC",
+	"devDependencies": {
+		"typescript": "^4.4.2"
+	}
+}
