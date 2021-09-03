@@ -1,5 +1,5 @@
 const test = require('ava')
-const { parseCommandName } = require("../../src/commands");
+const { parseCommandName } = require("../../../../_src/commands");
 
 test('parseCommandName recognizes simple command name', t => {
 

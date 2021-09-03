@@ -1,5 +1,5 @@
 const test = require('ava')
-const setup = require('../setup')
+const setup = require('../common/setup')
 
 test('config get command uses JSON path expressions', async t => {
 	const { project, zupa } = setup(t)

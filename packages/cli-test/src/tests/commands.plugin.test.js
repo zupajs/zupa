@@ -1,5 +1,5 @@
 const test = require('ava')
-const setup = require('../setup')
+const setup = require('../common/setup')
 
 // TODO 30-Aug-2021/zslengyel: commands is not implemented yet
 test.skip('commands command is defined', async t => {

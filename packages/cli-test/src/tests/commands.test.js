@@ -1,5 +1,5 @@
 const test = require('ava')
-const setup = require('../setup')
+const setup = require('../common/setup')
 
 test('user can define command with $', async t => {
 	const { project, zupa } = setup(t)

@@ -1,6 +1,6 @@
 const test = require('ava')
 const { resolve } = require('path')
-const setup = require("../setup");
+const setup = require("../common/setup");
 
 test('test project created', async t => {
 	const { project } = setup(t)
@@ -18,13 +18,28 @@ test('package.js is loaded', async t => {
 	t.is(res.exitCode, 0);
 })
 
+test('zupa should throw an error because plugin is not exported as default', async t => {
+	const { project, zupa } = setup(t)
+	project.volume({
+		'./package.js': `
+			class extends ZupaPlugin {
+			}
+		`
+	})
+
+	await t.throwsAsync(async () => {
+		const res = await zupa()
+
+		console.log(res)
+	})
+})
+
 test('npm package is not installed in prepare due to missing version', async t => {
 	const { project, zupa } = setup(t)
 	project.volume({
 		'./package.js': `
-			prepare(({projectDep}) => {
-				projectDep('lodash')
-			})
+			exports.default = class extends ZupaPlugin {
+			}
 		`
 	})
 

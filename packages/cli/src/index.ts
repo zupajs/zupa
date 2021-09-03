@@ -16,6 +16,7 @@ export async function main(defaultPackageFile = './package.js') {
 			const project = new Project(defaultPackageFile);
 
 			await project.load();
+
 			await project.run();
 		}
 		else {

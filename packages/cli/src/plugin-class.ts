@@ -1,27 +1,26 @@
+import { createRequire } from 'module'
+import { PluginHelper } from './plugin-helper';
 
-export interface Plugin {
-	onPrepare(): Promise<void>;
-	onLoad(): Promise<void>;
-}
+export function createPluginClass(filepath: string, pluginHelper: PluginHelper) {
 
-export function createPluginClass(filepath: string) {
+	const Plugin = class implements ZupaPlugin {
 
-	const Plugin = class implements Plugin {
+		constructor() {}
 
-		async onPrepare() {
-			console.log('Plugin.onPrepare')
-		}
-
-		async onLoad() {
-			console.log('Plugin.onLoad')
-		}
-
-		filepath(): string {
+		pluginPath(): string {
 			return filepath;
 		}
 
 		name(): string {
-			return this.filepath()
+			return this.pluginPath()
+		}
+
+		require(packageName: string) {
+			const req = createRequire(pluginHelper.project.pluginAccess)
+
+			const alias = pluginHelper.findNpmPackageAlias(packageName)
+
+			return req(alias)
 		}
 
 	}

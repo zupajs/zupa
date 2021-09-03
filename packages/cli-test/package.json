@@ -1,0 +1,15 @@
+{
+	"name": "cli-test",
+	"scripts": {
+		"test": "nyc ava src/tests/*",
+		"test:dev": "ava src/tests/* --watch"
+	},
+	"dependencies": {
+		"ava": "^3.15.0",
+		"execa": "^5.1.1",
+		"nyc": "^15.1.0"
+	},
+	"engines": {
+		"node": ">= 14"
+	}
+}

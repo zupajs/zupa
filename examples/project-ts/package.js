@@ -1,15 +1,34 @@
+exports.default = class extends ZupaPlugin {
 
-//eslint-disable-next-line no-undef
-exports.default = class extends Plugin {
+	dependencies = [
+		'cowsay@1.5.0',
+		'lodash@4.17.21',
+		{ packageName: 'jquery', version: '3.6.0', registry: 'https://registry.npmjs.org' }
+	];
 
-	async onPrepare() {
-		console.log('loaded: prepare')
-		await super.onPrepare()
-	}
+	plugins = [
+		'./sub-plugin.plugin.js'
+	]
 
-	async onLoad() {
-		console.log('loaded: main')
-		await super.onLoad()
+	commands(prog, {
+		result
+	}) {
+
+		prog
+			.command('moo')
+			.description('Say moo')
+			.action(async () => {
+
+				const cowsay = this.require('cowsay')
+				console.log(cowsay.say({
+					text : "I'm a moooodule",
+					e : "oO",
+					T : "U "
+				}));
+
+				result('hu');
+			})
+
 	}
 
 }

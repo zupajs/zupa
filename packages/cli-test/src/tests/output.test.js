@@ -1,5 +1,5 @@
 const test = require('ava')
-const setup = require("../setup");
+const setup = require("../common/setup");
 
 test('output considers output.forceTTYMode flag', async t => {
 	const { project, zupa } = setup(t)
@@ -13,7 +13,7 @@ test('output considers output.forceTTYMode flag', async t => {
 
 	const res = await zupa(['config'])
 
-	const { stripAnsi } = require('../../src/common/strip-ansi')
+	const { stripAnsi } = require('../../../../_src/common/strip-ansi')
 	const rawOut = stripAnsi(res.stdout);
 	const outputLines = rawOut.split('\n')
 	const linesWithNpmPluginLoad = outputLines.filter(line => line.includes('🔌 load plugin: @zupa/core-plugins/npm.plugin.js'))

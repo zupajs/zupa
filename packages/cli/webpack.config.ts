@@ -1,5 +1,5 @@
-import path from "path";
-import webpack, { Configuration } from "webpack";
+import path from 'path';
+import webpack, { Configuration } from 'webpack';
 
 const config: Configuration = {
 	entry: './main.ts',
@@ -11,15 +11,15 @@ const config: Configuration = {
 				test: /\.(ts|js)?$/,
 				exclude: /node_modules/,
 				use: {
-					loader: "babel-loader",
+					loader: 'babel-loader',
 					options: {
 						presets: [
-							"@babel/preset-env",
-							"@babel/preset-typescript"
+							'@babel/preset-env',
+							'@babel/preset-typescript'
 						],
 						plugins: [
-							"@babel/plugin-proposal-class-properties",
-							"@babel/plugin-transform-runtime"
+							'@babel/plugin-proposal-class-properties',
+							'@babel/plugin-transform-runtime',
 						]
 					},
 				},
@@ -27,7 +27,7 @@ const config: Configuration = {
 		],
 	},
 	resolve: {
-		extensions: [".ts", ".js"],
+		extensions: ['.ts', '.js'],
 	},
 	plugins: [
 		new webpack.BannerPlugin({
@@ -37,8 +37,8 @@ const config: Configuration = {
 		})
 	],
 	output: {
-		path: path.resolve(__dirname, "dist"),
-		filename: "zupa.js",
+		path: path.resolve(__dirname, 'dist'),
+		filename: 'zupa.js',
 	}
 };
 export default config;

@@ -4,9 +4,8 @@
 	"main": "zupa.js",
 	"types": "zupa.d.ts",
 	"scripts": {
-		"test": "nyc ava testing/tests/*",
-		"test:dev": "ava testing/tests/* --watch",
-		"lint": "eslint zupa.js src/**/* testing/**/*"
+		"start": "npm run start --workspace ./packages/cli",
+		"lint": "eslint zupa.js src/**/* packages/cli-test/**/*"
 	},
 	"keywords": [
 		"project-management",
@@ -18,19 +17,11 @@
 		"zupa": "zupa.js"
 	},
 	"engines": {
-		"node": ">= 14.8.0"
+		"node": ">= 14"
 	},
 	"dependencies": {
-		"@types/minimist": "1.2.1",
-		"@types/tap": "^15.0.5",
-		"chalk": "4.1.1",
-		"emittery": "0.9.2",
-		"execa": "^5.1.1",
 		"ink": "^3.0.9",
 		"jsonpath-plus": "^6.0.1",
-		"lodash": "^4.17.21",
-		"minimist": "1.2.5",
-		"npm": "7.20.6",
 		"rc": "^1.2.8",
 		"react": "^16.14.0",
 		"strip-ansi": "^7.0.0"
@@ -41,21 +32,21 @@
 		"src/**/*.js"
 	],
 	"devDependencies": {
+		"@babel/eslint-parser": "^7.15.0",
 		"@types/node": "^16.6.1",
-		"ava": "^3.15.0",
 		"check-engines": "^1.5.0",
 		"console-table-printer": "^2.10.0",
 		"deepmerge": "^4.2.2",
 		"eslint": "^7.32.0",
-		"eslint-plugin-node": "^11.1.0",
-
-		"nyc": "^15.1.0",
-		"tap": "^15.0.9"
+		"eslint-plugin-node": "^11.1.0"
 	},
 	"directories": {
 		"example": "examples",
-		"test": "testing"
+		"test": "packages/cli-test"
 	},
+	"workspaces": [
+		"./packages/*"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/zupajs/zupa.git"
