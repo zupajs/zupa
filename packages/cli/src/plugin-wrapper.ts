@@ -1,21 +1,21 @@
 import path, { extname } from 'path';
 import { compile } from './ts-compiler';
 import fs from 'fs';
-import { createPluginClass } from './plugin-class';
-import { Dependencies, Zupa } from '../zupa';
+import { createProjectEntry } from './project-entry';
+import { Dependencies, PluginDependencies, ProjectBuilder, ProjectContext, ValueProvider } from '../zupa';
 import { PluginHelper } from './plugin-helper';
 import { Project } from './project';
 import { acquireValueOf } from './common/async-tools';
 import Emittery from 'emittery';
+import { ProjectDefinition } from './project-definition';
 
 export type PluginAccess = string;
 
 export class PluginWrapper {
 
-	protected plugin!: Zupa.Plugin;
-	protected pluginClass!: ReturnType<typeof createPluginClass>;
-
 	protected children: PluginWrapper[] = [];
+
+	protected projectDefinition = new ProjectDefinition();
 
 	public readonly events: Emittery = new Emittery()
 
@@ -37,33 +37,28 @@ export class PluginWrapper {
 		return this._pluginAccess
 	}
 
+	async beforeLoad() {
+
+	}
+
 	async load() {
+		await this.beforeLoad();
+
 		let teardownCallback;
 		try {
 			const { workingPluginAccess, teardown } = await this.prepareWorkingPluginAccess();
 			teardownCallback = teardown;
 
-			//console.log(`Load: ${workingPluginAccess}`)
+			const projectBuilder$ = this.assignGlobal(workingPluginAccess)
+			await import(/* webpackIgnore: true */workingPluginAccess)
 
-			this.assignGlobal(workingPluginAccess)
-			const pluginDef = await import(/* webpackIgnore: true */workingPluginAccess)
+			const projectBuilder = await projectBuilder$
 
-			const pluginClassDef = pluginDef.default.default;
-			if (!pluginDef.default?.default) {
-				throw new Error(`
-						Please export plugin as 'default' property.
-						E.g.
-							exports.default = class extends ZupaPlugin {}
-				`);
-			}
-			const pluginClass = pluginClassDef as ReturnType<typeof createPluginClass>;
-			this.pluginClass = pluginClass;
-
-			this.plugin = new pluginClass()
-
-			await this.treatPlugins();
-
-			await this.treatDependencies();
+			await this.invokeProjectBuilder(projectBuilder)
+		}
+		catch (e) {
+			throw new Error(`while loading ${this.pluginAccess}
+			${e}`)
 		}
 		finally {
 			if (teardownCallback) {
@@ -82,25 +77,43 @@ export class PluginWrapper {
 			teardown = () => fs.rmSync(workingPluginAccess)
 		}
 
-		// TODO 02-Sep-2021/zslengyel: better handlign
-		workingPluginAccess = path.resolve(process.cwd(), workingPluginAccess);
+		// TODO 02-Sep-2021/zslengyel: better handling
+		if (this.parent) {
+			const basedir = path.dirname(this.parent.pluginAccess)
+			workingPluginAccess = path.resolve(basedir, workingPluginAccess);
+		}
+		else {
+			workingPluginAccess = path.resolve(process.cwd(), workingPluginAccess);
+		}
 
 		return { workingPluginAccess, teardown };
 	}
 
-	private assignGlobal(workingPluginAccess: string) {
+	private assignGlobal(workingPluginAccess: string): Promise<ProjectBuilder> {
 
 		const pluginHelper = new PluginHelper(this);
 
-		const ZupaPlugin = createPluginClass(workingPluginAccess, pluginHelper);
+		const { project, resolver } = createProjectEntry(workingPluginAccess, pluginHelper);
 
 		Object.assign(global, {
-			ZupaPlugin
+			project
 		})
+
+		return resolver.then((builder) => {
+			// immediately de-assign
+
+			Object.assign(global, {
+				project: () => {
+					throw new Error('project entry called outside of loading mechanism');
+				}
+			});
+
+			return builder
+		});
 	}
 
 	private async treatDependencies() {
-		await acquireValueOf<Dependencies>(this.plugin.dependencies, async (dependencies) => {
+		await acquireValueOf<Dependencies>(this.projectDefinition.dependencies, async (dependencies) => {
 
 			// TODO 03-Sep-2021/zslengyel: check duplicate deps
 
@@ -109,7 +122,7 @@ export class PluginWrapper {
 	}
 
 	private async treatPlugins() {
-		await acquireValueOf(this.plugin.plugins, async (pluginDeps) => {
+		await acquireValueOf(this.projectDefinition.plugins, async (pluginDeps) => {
 
 			for (let pluginDep of pluginDeps) {
 
@@ -122,24 +135,52 @@ export class PluginWrapper {
 		});
 	}
 
-	protected async treatCommands() {
+	//protected async treatCommands() {
+	//
+	//	for (let child of this.children) {
+	//		await child.treatCommands();
+	//	}
+	//
+	//	let commands = this.plugin.commands;
+	//	if (!commands) {
+	//		return;
+	//	}
+	//
+	//	const prog = this.project.rootCommand();
+	//
+	//	const result = (value: any) => {
+	//		this.project.commandResult = value;
+	//	}
+	//
+	//	await commands.apply(this.plugin, [prog, { Command, result }]);
+	//}
 
-		for (let child of this.children) {
-			await child.treatCommands();
-		}
-
-		let commands = this.plugin.commands;
-		if (!commands) {
-			return;
-		}
-
-		const prog = this.project.rootCommand();
-
-		const result = (value: any) => {
-			this.project.commandResult = value;
-		}
-
-		await commands.apply(this.plugin, [prog, { result }]);
+	protected async requirePlugin(pluginWrapper: PluginWrapper) {
+		this.children.push(pluginWrapper)
+		await pluginWrapper.load()
 	}
 
+	private async invokeProjectBuilder(projectBuilder: ProjectBuilder) {
+
+		const context = this.buildProjectContext();
+		await projectBuilder(context);
+
+		await this.treatPlugins();
+		await this.treatDependencies();
+	}
+
+	private buildProjectContext(): ProjectContext {
+
+		return {
+			name: (name: string) => {
+				this.projectDefinition.defineName(name);
+			},
+			plugins: (content: ValueProvider<PluginDependencies>) => {
+				this.projectDefinition.definePlugins(content)
+			},
+			dependencies: (content: ValueProvider<Dependencies>) => {
+				this.projectDefinition.defineDependencies(content);
+			}
+		}
+	}
 }

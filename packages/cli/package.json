@@ -28,6 +28,7 @@
 		"@types/webpack-dev-server": "^4.0.3",
 		"babel-loader": "^8.2.2",
 		"commander": "^8.1.0",
+		"copy-webpack-plugin": "^9.0.1",
 		"declaration-bundler-webpack-plugin": "^1.0.3",
 		"ts-loader": "^9.2.5",
 		"ts-node": "^10.2.1",

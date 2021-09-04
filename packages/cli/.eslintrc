@@ -1,0 +1,6 @@
+{
+	"extends": [
+		"../../.eslintrc"
+	],
+	"parser": "typescript"
+}

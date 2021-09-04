@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { Project } from './project';
 
-export async function main(defaultPackageFile = './package.js') {
+export async function main(defaultPackageFile = './project.js') {
 
 	process.on('uncaughtException', function (e) {
 		console.error('uncaughtException', e)

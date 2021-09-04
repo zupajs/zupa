@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="zupa-ts" type="NodeJSConfigurationType" application-parameters="moo --project ../../packages/cli/tsconfig.json" node-parameters="--require ../../node_modules/ts-node/register" path-to-js-file="../../packages/cli/main.ts" working-dir="$PROJECT_DIR$/examples/project-ts">
+  <configuration default="false" name="zupa-ts" type="NodeJSConfigurationType" application-parameters="help --project ../../packages/cli/tsconfig.json" node-parameters="--require ../../node_modules/ts-node/register" path-to-js-file="../../packages/cli/main.ts" working-dir="$PROJECT_DIR$/examples/project-ts">
     <envs>
       <env name="PATH" value="$USER_HOME$/.nvs/node/14.17.1/x64/bin/:$PATH" />
     </envs>
     <EXTENSION ID="com.jetbrains.nodejs.run.NodeJSProfilingRunConfigurationExtension">
-      <profiling allow-runtime-heap-snapshot="true" one-log-file="true" do-profile="true" />
+      <profiling one-log-file="true" />
     </EXTENSION>
     <method v="2" />
   </configuration>

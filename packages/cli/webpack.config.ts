@@ -1,5 +1,6 @@
 import path from 'path';
 import webpack, { Configuration } from 'webpack';
+const CopyPlugin = require("copy-webpack-plugin");
 
 const config: Configuration = {
 	entry: './main.ts',
@@ -34,7 +35,12 @@ const config: Configuration = {
 			banner: '#!/usr/bin/env node',
 			raw: true, // if true, banner will not be wrapped in a comment
 			entryOnly: true, // if true, the banner will only be added to the entry chunks
-		})
+		}),
+		new CopyPlugin({
+			patterns: [
+				{ from: "src/core-plugins", to: "core-plugins" },
+			],
+		}),
 	],
 	output: {
 		path: path.resolve(__dirname, 'dist'),

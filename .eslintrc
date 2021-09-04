@@ -3,20 +3,23 @@
 		"eslint:recommended",
 		"plugin:node/recommended"
 	],
-	"parserOptions": {
-		// Only ESLint 6.2.0 and later support ES2020.
-		"ecmaVersion": 2020
-	},
 	"env": {
 		"node": true,
 		"es2020": true
 	},
 	"globals": {
-		"prepare": "readonly",
-		"define": "readonly"
+		"ZupaPlugin": "readonly"
 	},
 	"rules": {
 		// as zupa handles dependencies, require can use package that is not in package.json
 		"node/no-extraneous-require": 0
+	},
+	"parser": "@babel/eslint-parser",
+	"parserOptions": {
+		// Only ESLint 6.2.0 and later support ES2020.
+		"ecmaVersion": 2020,
+		"sourceType": "module",
+		"requireConfigFile": false
 	}
+
 }
