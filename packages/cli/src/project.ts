@@ -1,36 +1,54 @@
-import { PluginAccess, PluginWrapper } from './plugin-wrapper';
+import { PluginWrapper } from './plugin/plugin-wrapper';
 import { PackageManager } from './package-manager/package-manager';
 import { Command } from 'commander';
 import path from 'path';
+import { RequireHelper } from './plugin/require-helper';
+import { Project as ZupaProject } from '../zupa'
+import { logger } from './log';
+import chalk from 'chalk';
 
-export class Project extends PluginWrapper {
+export class Project extends PluginWrapper implements ZupaProject {
 
 	protected _packageManager = new PackageManager();
 	protected program: Command = new Command()
 	private _commandResult: any = undefined;
 
-	constructor(pluginAccess: PluginAccess) {
+	public readonly requireHelper = new RequireHelper(this)
+
+	constructor(pluginAccess: string) {
 		super(null, pluginAccess);
 
-	}
-
-	async beforeLoad(): Promise<void> {
-		super.beforeLoad();
-
-		// FIXME 04-Sep-2021/zslengyel:
-		await this.requirePlugin(new PluginWrapper(
-			this,
-			path.resolve(__dirname, './core-plugins/core-plugins.js')
-		))
+		this.listenEvents();
 
 		this.program.version('1.0.0 TODO')
 
 		this.program.showHelpAfterError(true)
 
+		this.program.configureOutput({
+			writeOut(str: string) {
+				logger.info(str);
+			},
+
+			writeErr(str: string) {
+				logger.error(str)
+			},
+
+			outputError: (str, write) => write(chalk(str))
+
+		})
+	}
+
+	private listenEvents() {
+		this.events.on('load:before', async () => {
+			await this.requirePlugin(new PluginWrapper(
+				this,
+				path.resolve(__dirname, './core-plugins/core-plugins.js')
+			))
+		})
+
 		this.events.on('command:run:after', () => {
 			console.log('result', this.commandResult)
 		})
-
 	}
 
 	get packageManager() {
@@ -43,8 +61,7 @@ export class Project extends PluginWrapper {
 
 		await this.installDependencies();
 
-		// FIXME 04-Sep-2021/zslengyel:
-		//await this.treatCommands();
+		await this.treatCommands();
 
 		this.allowDevMode();
 
@@ -68,7 +85,11 @@ export class Project extends PluginWrapper {
 	}
 
 	private async installDependencies() {
+		await this.events.emitSerial('install:before')
+
 		await this.packageManager.installDependencies();
+
+		await this.events.emitSerial('install:after')
 	}
 
 	public rootCommand(): Command {

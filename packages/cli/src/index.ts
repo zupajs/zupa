@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Project } from './project';
+//import { attachOutput } from './output/output';
 
 export async function main(defaultPackageFile = './project.js') {
 
@@ -14,6 +15,8 @@ export async function main(defaultPackageFile = './project.js') {
 		if (fs.existsSync(defaultPackageFile)) {
 
 			const project = new Project(defaultPackageFile);
+
+			//await attachOutput(project);
 
 			await project.load();
 

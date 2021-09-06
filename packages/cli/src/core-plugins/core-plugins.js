@@ -1,7 +1,4 @@
-project(({
-	plugins
-}) => {
-
+project(({ plugins }) => {
 	plugins([
 		'./npm-commands.plugin.js'
 	])

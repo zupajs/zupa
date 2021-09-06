@@ -1,6 +1,21 @@
 {
-	"extends": [
-		"../../.eslintrc"
+	"root": true,
+	"parser": "@typescript-eslint/parser",
+	"env": {
+		"node"
+	},
+	"plugins": [
+		"@typescript-eslint"
 	],
-	"parser": "typescript"
+	"extends": [
+		"eslint:recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"rules": {
+	},
+	"ignorePatterns": [
+		"./node_modules/**/*",
+		"./dist/**/*"
+	]
 }

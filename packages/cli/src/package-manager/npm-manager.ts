@@ -1,6 +1,7 @@
 import execa from 'execa';
 import path from 'path';
 import fs from 'fs';
+import { logger } from '../log';
 
 interface PackageListDetail {
 	version: string;
@@ -21,10 +22,6 @@ export interface Package {
 export class NpmManager {
 
 	private installedPackageList!: PackageList;
-
-	constructor() {
-		this.acquireInstalledPackageList();
-	}
 
 	async prepare() {
 
@@ -49,11 +46,9 @@ export class NpmManager {
 		const packages = await this.findMissingPackages(desiredPackages)
 
 		if (packages.length === 0) {
-			//console.log('Packages ar up to date', desiredPackages)
+			logger.info('Packages ar up to date', desiredPackages)
 			return;
 		}
-
-		console.log('Installing packages', registry, packages)
 
 		const args = [];
 
@@ -108,5 +103,14 @@ export class NpmManager {
 			this.installedPackageList = JSON.parse(res.stdout) as PackageList;
 		}
 		return this.installedPackageList
+	}
+
+	public async getAvailableVersions(packageName: string) {
+		const res = await execa('npm', ['view', packageName, '--json', 'versions'], {
+			preferLocal: true,
+			stdout: 'pipe'
+		})
+
+		return JSON.parse(res.stdout) as string[];
 	}
 }

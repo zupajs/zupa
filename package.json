@@ -5,7 +5,7 @@
 	"types": "zupa.d.ts",
 	"scripts": {
 		"start": "npm run start --workspace ./packages/cli",
-		"lint": "eslint zupa.js src/**/* packages/cli-test/**/*"
+		"lint": "eslint packages/**/*.ts packages/**/*.js"
 	},
 	"keywords": [
 		"project-management",
@@ -19,13 +19,6 @@
 	"engines": {
 		"node": ">= 14"
 	},
-	"dependencies": {
-		"ink": "^3.0.9",
-		"jsonpath-plus": "^6.0.1",
-		"rc": "^1.2.8",
-		"react": "^16.14.0",
-		"strip-ansi": "^7.0.0"
-	},
 	"files": [
 		"*.js",
 		"*.d.ts",
@@ -34,9 +27,8 @@
 	"devDependencies": {
 		"@babel/eslint-parser": "^7.15.0",
 		"@types/node": "^16.6.1",
-		"check-engines": "^1.5.0",
-		"console-table-printer": "^2.10.0",
-		"deepmerge": "^4.2.2",
+		"@typescript-eslint/eslint-plugin": "^4.30.0",
+		"@typescript-eslint/parser": "^4.30.0",
 		"eslint": "^7.32.0",
 		"eslint-plugin-node": "^11.1.0"
 	},

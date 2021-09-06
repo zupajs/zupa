@@ -3,12 +3,15 @@
 		"eslint:recommended",
 		"plugin:node/recommended"
 	],
+	"ignorePatterns": [
+		"node_modules"
+	],
 	"env": {
 		"node": true,
 		"es2020": true
 	},
 	"globals": {
-		"ZupaPlugin": "readonly"
+		"project": "readonly"
 	},
 	"rules": {
 		// as zupa handles dependencies, require can use package that is not in package.json

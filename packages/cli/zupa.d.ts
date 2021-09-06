@@ -1,28 +1,56 @@
 import { Command } from 'commander';
+import winston from 'winston';
 
-export type DetailedDependency = { packageName: string; version: string; registry?: string }
+export type DetailedDependency = {
+	packageName: string;
+	version: string;
+	registry?: string;
+	noalias?: boolean;
+};
+
 export type Dependency = string | DetailedDependency;
 export type Dependencies = Dependency[];
 
-export type PluginDependency = string;
-export type PluginDependencies = PluginDependency[];
+export type PluginOptions = {
+	id?: string;
+	[opt: string]: unknown;
+}
+export type DetailedPluginImport =  [string, PluginOptions];
+export type PluginImport = string | DetailedPluginImport;
+export type PluginImports = PluginImport[];
 
 export type Async<T> = Promise<T> | T;
-export type ValueProvider<T> = T | ( () => Async<T> )
+export type ValueProvider<T> = T | (() => Async<T>)
+
+export type ResultProvider = (result: any) => void;
+
+export type CommandsBuilder = (
+	cmd: (name: string) => Command,
+	subcmd: (name: string) => Command,
+	result: ResultProvider
+) => void;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Project {}
 
 export interface ProjectContext {
 
 	dependencies: (content: ValueProvider<Dependencies>) => void;
 
-	plugins: (content: ValueProvider<PluginDependencies>) => void;
+	plugins: (content: ValueProvider<PluginImports>) => void;
 
 	name: (name: string) => void;
 
 	// TODO 04-Sep-2021/zslengyel:
-	//commands?: (cmd: Command, options: {}) => Async<void>;
-	//
-	//createCommand(name?: string): Command;
+	commands: (commandsBuilder: CommandsBuilder) => Async<void>;
 
+	require: <T = any>(pack: string) => T;
+
+	project: Project;
+
+	options: any;
+
+	logger: winston.Logger;
 }
 
 export interface ProjectBuilder {
@@ -34,7 +62,7 @@ export interface ProjectEntry {
 }
 
 declare global {
-	project: ProjectEntry;
+	const project: ProjectEntry;
 }
 
 export default global;

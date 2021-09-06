@@ -1,11 +1,14 @@
 import path from 'path';
 import webpack, { Configuration } from 'webpack';
-const CopyPlugin = require("copy-webpack-plugin");
+import CopyPlugin from 'copy-webpack-plugin';
 
 const config: Configuration = {
 	entry: './main.ts',
 	target: 'node',
-	mode: 'development',
+	mode: 'production',
+	optimization: {
+		minimize: false
+	},
 	module: {
 		rules: [
 			{
@@ -38,7 +41,7 @@ const config: Configuration = {
 		}),
 		new CopyPlugin({
 			patterns: [
-				{ from: "src/core-plugins", to: "core-plugins" },
+				{ from: 'src/core-plugins', to: 'core-plugins' },
 			],
 		}),
 	],

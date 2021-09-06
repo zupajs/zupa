@@ -1,10 +1,13 @@
 project(({
 	dependencies,
-	commands
+	commands,
+	require,
+	options
 }) => {
 
 	dependencies([
 		'cowsay@1.4.0',
+		`yosay@${options.versions.yosay}`
 	])
 
 	//commands(prog, {
@@ -23,4 +26,12 @@ project(({
 	//			}));
 	//		})
 	//}
+
+	return {
+		welcome: () => {
+			const yosay = require('yosay')
+
+			return yosay('sub')
+		}
+	}
 })
