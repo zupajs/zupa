@@ -1,5 +1,17 @@
-import { Command } from 'commander';
 import winston from 'winston';
+
+export interface TaskConfiguration {
+	handler(): any;
+}
+
+export interface Task {
+	name: string;
+	invoked: boolean;
+	configuration: TaskConfiguration;
+	invoke(): Async<any>;
+	
+	configure(handler: () => Async<T>): Task;
+}
 
 export type DetailedDependency = {
 	packageName: string;
@@ -22,13 +34,7 @@ export type PluginImports = PluginImport[];
 export type Async<T> = Promise<T> | T;
 export type ValueProvider<T> = T | (() => Async<T>)
 
-export type ResultProvider = (result: any) => void;
-
-export type CommandsBuilder = (
-	cmd: (name: string) => Command,
-	subcmd: (name: string) => Command,
-	result: ResultProvider
-) => void;
+export type TasksBuilder = (taskGetter: (name: string) => Task) => Promise<void>;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Project {}
@@ -42,7 +48,7 @@ export interface ProjectContext {
 	name: (name: string) => void;
 
 	// TODO 04-Sep-2021/zslengyel:
-	commands: (commandsBuilder: CommandsBuilder) => Async<void>;
+	tasks: (taskBuilder: TasksBuilder) => Async<void>;
 
 	require: <T = any>(pack: string) => T;
 

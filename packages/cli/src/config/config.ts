@@ -5,7 +5,7 @@ import minimist from 'minimist';
 const argv = minimist<Config>(process.argv.slice(2))
 
 export interface Config {
-	commands: {
+	tasks: {
 		default: string;
 	};
 	output: {
@@ -22,7 +22,7 @@ export interface Config {
 }
 
 const defaultConfig: Config = {
-	commands: {
+	tasks: {
 		default: ''
 	},
 	output: {

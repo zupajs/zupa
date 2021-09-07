@@ -1,16 +1,16 @@
-import { CommandsBuilder, Dependencies, PluginImports, ValueProvider } from '../../zupa';
+import { Dependencies, PluginImports, TasksBuilder, ValueProvider } from '../../zupa';
 
 export class ProjectDefinition {
 
 	private _dependencies: ValueProvider<Dependencies>[] = [];
 	private _name!: string;
 	private _plugins: ValueProvider<PluginImports>[] = [];
-	private _commandsBuilder: CommandsBuilder[] = [];
+	private _tasksBuilders: TasksBuilder[] = [];
 
 	// Getters
 
-	get commandsBuilders(): CommandsBuilder[] {
-		return this._commandsBuilder;
+	get tasksBuilders(): TasksBuilder[] {
+		return this._tasksBuilders;
 	}
 
 	get dependencies(): ValueProvider<Dependencies>[] {
@@ -39,7 +39,7 @@ export class ProjectDefinition {
 		this._plugins.push(content);
 	}
 
-	defineCommandsBuilder(commandsBuilder: CommandsBuilder): void {
-		this._commandsBuilder.push(commandsBuilder);
+	defineTasksBuilder(tasksBuilder: TasksBuilder): void {
+		this._tasksBuilders.push(tasksBuilder);
 	}
 }

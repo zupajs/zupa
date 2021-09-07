@@ -1,29 +1,27 @@
 project(({
-	commands,
+	tasks,
 	project,
-	dependencies
+	dependencies,
+	options
 }) => {
 
 	dependencies([
 		'chalk@4.1.2'
 	])
 
-	commands((cmd, subcmd) => {
+	tasks(task => {
 
-		const list = subcmd('list')
-			.description('list npm packages')
-			.action(() => {
+		task('npm:publish')
+			.configure(() => {
 				const dependencies = project.packageManager.dependencies;
 
 				const out = dependencies.map(dep => {
 					return `${dep.packageName}@${dep.version} at ${dep.source}`
 				}).join('\n')
 
-				console.log(out)
+				return out;
 			})
 
-		cmd('npm')
-			.addCommand(list)
 
 	})
 })

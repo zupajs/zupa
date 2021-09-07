@@ -1,9 +1,10 @@
 project(({
 	dependencies,
 	plugins,
-	commands,
+	tasks,
 	require,
-	project
+	project,
+	logger
 }) => {
 
 	dependencies([
@@ -21,29 +22,25 @@ project(({
 		}]
 	])
 
-	commands((cmd, sub, result) => {
+	tasks(task => {
 
-		cmd('yoo')
-			.action(() => {
+		task('yoo').configure(() => {
 
-				const subPl = require('plugin://sub-plugin')
+			const subPl = require('plugin://sub-plugin')
 
-				console.log(subPl.welcome())
+			return subPl.welcome()
 
-			})
+		})
 
-		cmd('moo')
-			.description('Say moo')
-			.action(async () => {
+		task('moo')
+			.configure(() => {
 
 				const cowsay = require('cowsay')
-				console.log(cowsay.say({
-					text : "I'm a moooodule",
-					e : "oO",
-					T : "U "
-				}));
-
-				result('hu');
+				return cowsay.say({
+					text: "I'm a moooodule",
+					e: "oO",
+					T: "U "
+				});
 			})
 
 	})

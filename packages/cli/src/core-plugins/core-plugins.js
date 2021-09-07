@@ -1,5 +1,6 @@
 project(({ plugins }) => {
 	plugins([
-		'./npm-commands.plugin.js'
+		'./tasks.plugin.js',
+		'./npm-publish.plugin.js'
 	])
 })

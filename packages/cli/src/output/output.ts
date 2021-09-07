@@ -3,7 +3,6 @@ import React from 'react';
 import { Newline, render, Text, useStderr } from 'ink';
 import chalk from 'chalk';
 import Transport from 'winston-transport';
-import { logger } from '../log';
 
 const { useState, useEffect, createElement } = React;
 
@@ -18,11 +17,16 @@ const formatResult = (message: any) => {
 
 const logLevelColor = (level: string) => {
 	switch (level) {
-		case 'info': return chalk.green(level);
-		case 'verbose': return chalk.gray(level);
-		case 'error': return chalk.red(level);
-		case 'warn': return chalk.yellow(level);
-		default: return level;
+		case 'info':
+			return chalk.green(level);
+		case 'verbose':
+			return chalk.gray(level);
+		case 'error':
+			return chalk.red(level);
+		case 'warn':
+			return chalk.yellow(level);
+		default:
+			return level;
 	}
 }
 
@@ -36,11 +40,17 @@ const formatLogRecord = (logEntry: LogRecord) => {
 		logEntry.level === 'info' ? chalk.white : chalk
 	)
 
-	const rawMessage = typeof logEntry.message === 'string' ? logEntry.message : (
-		logEntry.message.length ? logEntry.message.join('\n') : 'NO MESSAGE SENT FROM LOG'
-	)
+	const rawMessage = logEntry.message;
 
-	return logLevelColor(logEntry.level) + color(rawMessage);
+	const formattedLevel = logLevelColor(logEntry.level);
+	const formattedMessage = color(rawMessage);
+
+	let baseMessage = `${formattedLevel}\t${formattedMessage}`;
+	if (logEntry.data !== undefined) {
+		const formattedData = JSON.stringify(logEntry.data, null, 3);
+		baseMessage = `${baseMessage}\n${formattedData}`
+	}
+	return baseMessage;
 }
 
 
@@ -61,7 +71,12 @@ interface LogRecord {
 const LogLevel = Symbol.for('level')
 const LogSplat = Symbol.for('splat')
 
-const Output = ({ logTransport }: { logTransport: Transport }) => {
+const Output = ({ logTransport, logLevel }:
+	{
+		logTransport: Transport;
+		logLevel: string;
+	}
+) => {
 	const [logRecords, setLogRecord] = useState<LogRecord[]>([]);
 	const { write: writeStdErr } = useStderr();
 
@@ -82,37 +97,7 @@ const Output = ({ logTransport }: { logTransport: Transport }) => {
 		})
 	}, [])
 
-
-	//useEffect(() => {
-	//
-	//
-	//	const forceTTYMode = project.config.get().output?.forceTTYMode || false;
-	//
-	//	// detect if the output is redirected in bash
-	//	if (!isPipedOut(forceTTYMode)) {
-	//		const verboseLogEvents = ['output:log', 'output:log:info']
-	//		logEvents.push(...verboseLogEvents)
-	//	}
-	//
-	//	project.events.on(errorEventName, async (data) => {
-	//		writeStdErr(data.message[0])
-	//	})
-	//
-	//	const subscriptions = logEvents.map(eventName => {
-	//		const subscription = project.events.on(eventName, async (data) => {
-	//			//console.log(eventName, data)
-	//			setLogRecord(state => [...state, data])
-	//		})
-	//		return subscription
-	//	})
-	//
-	//	return () => {
-	//		// teardown
-	//		subscriptions.forEach(subs => subs())
-	//	};
-	//}, []);
-
-	let lastMessage = { level: '', message: '' };
+	let lastMessage: LogRecord = { level: '', message: '', data: undefined };
 	const resultEntry = logRecords.find(entry => entry.level === 'result')
 
 	if (resultEntry) {
@@ -125,7 +110,7 @@ const Output = ({ logTransport }: { logTransport: Transport }) => {
 
 	const message = formatLogRecord(lastMessage)
 
-	if (false) {
+	if (logLevel === 'verbose') {
 		return createElement(React.Fragment, null, ...logRecords.map(entry => {
 				return createElement(Text, null, formatLogRecord(entry));
 			}),
@@ -143,10 +128,14 @@ export class InkLogTransport extends Transport {
 
 	name = 'ink';
 
-	constructor(options?: InkLogTransportOptions) {
+	constructor(options: InkLogTransportOptions) {
 		super(options)
 
-		render(createElement(Output, { logTransport: this }, null), {
+		render(createElement(Output, {
+				logTransport: this,
+				logLevel: options.level || ''
+			},
+			null), {
 			exitOnCtrlC: false
 		});
 	}

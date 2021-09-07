@@ -3,19 +3,18 @@ import { compile } from '../ts-compiler';
 import fs from 'fs';
 import { createProjectEntry } from './project-entry';
 import {
-	CommandsBuilder,
 	Dependencies,
 	PluginImport,
 	PluginImports,
 	PluginOptions,
 	ProjectBuilder,
 	ProjectContext,
+	TasksBuilder,
 	ValueProvider
 } from '../../zupa';
 import { acquireValueOfArray } from '../common/async-tools';
 import Emittery from 'emittery';
 import { ProjectDefinition } from './project-definition';
-import { Command } from 'commander';
 import { ProjectAware } from './project-aware';
 import { isArray } from 'lodash'
 import { logger } from '../log';
@@ -191,29 +190,15 @@ export class PluginWrapper extends ProjectAware {
 			await child.treatCommands();
 		}
 
-		const commandsBuilders = this.projectDefinition.commandsBuilders;
+		const commandsBuilders = this.projectDefinition.tasksBuilders;
 
-		const commandBuildings = commandsBuilders.map(async commandsBuilder => {
+		const commandBuildings = commandsBuilders.map(async taskBuilder => {
 
-			const prog = this.project.rootCommand();
-
-			const result = (value: unknown) => {
-				this.project.commandResult = value;
+			const task = (name: string) => {
+				return this.project.taskRegistry.get(name)
 			}
 
-			const subcmd = (name: string) => {
-				return new Command(name);
-			}
-
-			const cmd = (name: string) => {
-				const command = new Command(name);
-
-				prog.addCommand(command)
-
-				return command;
-			}
-
-			return commandsBuilder.apply(null, [cmd, subcmd, result]);
+			return taskBuilder.apply(null, [task]);
 		})
 
 		await Promise.all(commandBuildings)
@@ -245,8 +230,8 @@ export class PluginWrapper extends ProjectAware {
 			dependencies: (content: ValueProvider<Dependencies>) => {
 				this.projectDefinition.defineDependencies(content);
 			},
-			commands: (commandsBuilder: CommandsBuilder) => {
-				this.projectDefinition.defineCommandsBuilder(commandsBuilder)
+			tasks: (taskBuilder: TasksBuilder) => {
+				this.projectDefinition.defineTasksBuilder(taskBuilder)
 			},
 			require: (packageName: string) => {
 				return this.project.requireHelper.require(packageName, this)
