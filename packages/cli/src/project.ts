@@ -4,12 +4,14 @@ import path from 'path';
 import { RequireHelper } from './plugin/require-helper';
 import { Project as ZupaProject } from '../zupa'
 import { TaskRegistry } from './tasks/task-registry';
+import { ProjectCache } from './cache/project-cache';
 
 export class Project extends PluginWrapper implements ZupaProject {
 
 	protected _packageManager = new PackageManager();
 	private _taskRegistry = new TaskRegistry();
 	public readonly requireHelper = new RequireHelper(this);
+	public readonly cache = new ProjectCache(this);
 
 	constructor(
 		pluginAccess: string,
@@ -38,9 +40,9 @@ export class Project extends PluginWrapper implements ZupaProject {
 
 	async run() {
 
-		// TODO 02-Sep-2021/zslengyel: this should be in other place
-
-		await this.installDependencies();
+		await this.cache.checkProjectUpToDate(async () => {
+			await this.installDependencies();
+		});
 
 		await this.treatCommands();
 

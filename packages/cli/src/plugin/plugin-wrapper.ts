@@ -36,11 +36,15 @@ export class PluginWrapper extends ProjectAware {
 	constructor(
 		parent: PluginWrapper | null,
 		protected _pluginImport: PluginImport,
-		protected children: PluginWrapper[] = [],
+		protected _children: PluginWrapper[] = [],
 		protected projectDefinition = new ProjectDefinition(),
 		public readonly events: Emittery = new Emittery()
 	) {
 		super(parent);
+	}
+
+	get children(): PluginWrapper[] {
+		return this._children;
 	}
 
 	get id(): string {
@@ -85,7 +89,7 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	get pluginPath(): string {
-		return this.pluginImport.path;
+		return this.prepareWorkingPluginAccess().workingPluginAccess;
 	}
 
 	async load(): Promise<void> {
@@ -95,7 +99,7 @@ export class PluginWrapper extends ProjectAware {
 
 		let teardownCallback;
 		try {
-			const { workingPluginAccess, teardown } = await this.prepareWorkingPluginAccess();
+			const { workingPluginAccess, teardown } = this.prepareWorkingPluginAccess();
 			teardownCallback = teardown;
 
 			const projectBuilder$ = this.assignGlobal();
@@ -124,7 +128,7 @@ export class PluginWrapper extends ProjectAware {
 		}
 	}
 
-	private async prepareWorkingPluginAccess() {
+	private prepareWorkingPluginAccess() {
 		const pluginImport = this.pluginImport;
 		const pluginPath = pluginImport.path;
 		let workingPluginAccess = pluginPath;
@@ -132,11 +136,11 @@ export class PluginWrapper extends ProjectAware {
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
 		let teardown = () => {};
 
-		const ext = extname(pluginPath)
-		if (ext === '.ts') {
-			workingPluginAccess = await compile(pluginPath)
-			teardown = () => fs.rmSync(workingPluginAccess)
-		}
+		//const ext = extname(pluginPath)
+		//if (ext === '.ts') {
+		//	workingPluginAccess = await compile(pluginPath)
+		//	teardown = () => fs.rmSync(workingPluginAccess)
+		//}
 
 		if (pluginPath.startsWith(ZUPA_PACAKGE_PREFIX)) {
 			const zupaPath = pluginPath.replace(ZUPA_PACAKGE_PREFIX, ZUPA_DIR);
@@ -195,7 +199,7 @@ export class PluginWrapper extends ProjectAware {
 
 					const child = new PluginWrapper(this, pluginDep)
 
-					this.children.push(child);
+					this._children.push(child);
 
 					await child.load();
 				}
@@ -205,7 +209,7 @@ export class PluginWrapper extends ProjectAware {
 
 	protected async treatCommands(): Promise<void> {
 
-		for (const child of this.children) {
+		for (const child of this._children) {
 			await child.treatCommands();
 		}
 
@@ -224,7 +228,7 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	protected async requirePlugin(pluginWrapper: PluginWrapper): Promise<void> {
-		this.children.push(pluginWrapper)
+		this._children.push(pluginWrapper)
 		await pluginWrapper.load()
 	}
 
@@ -263,7 +267,7 @@ export class PluginWrapper extends ProjectAware {
 
 	findChildById(pluginId: string): PluginWrapper | null {
 
-		for (const child of this.children) {
+		for (const child of this._children) {
 
 			if (child.id === pluginId) {
 				return child;

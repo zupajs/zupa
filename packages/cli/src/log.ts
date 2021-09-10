@@ -17,7 +17,9 @@ type ResultLogger = winston.Logger & {
 
 
 winston.addColors({
-	result: 'white'
+	result: 'white',
+	info: 'green',
+	verbose: 'grey'
 })
 
 export const logger: ResultLogger = winston.createLogger({

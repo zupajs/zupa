@@ -44,7 +44,7 @@ export class NpmController {
 		const packages = await this.findMissingPackages(desiredPackages)
 
 		if (packages.length === 0) {
-			logger.info('Packages ar up to date', desiredPackages)
+			logger.info('✅ Packages are up to date', desiredPackages)
 			return;
 		}
 
