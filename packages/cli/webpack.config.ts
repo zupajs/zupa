@@ -1,8 +1,8 @@
 import path from 'path';
-import webpack, { Configuration } from 'webpack';
+import webpack, { Compiler, Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-
+import * as fs from 'fs';
 
 const config: Configuration = {
 	entry: './main.ts',
@@ -48,6 +48,14 @@ const config: Configuration = {
 				{ from: 'src/plugins', to: 'plugins' },
 			],
 		}),
+		new class ChmodPlugin {
+			apply(compiler: Compiler) {
+				compiler.hooks.afterEmit.tap('ChmodPlugin', (compilation) => {
+					compilation.options.output.path
+					fs.chmodSync(path.resolve(compilation.options.output.path!, compilation.options.output.filename as string), '755');
+				})
+			}
+		}
 	],
 	output: {
 		path: path.resolve(__dirname, 'dist'),
