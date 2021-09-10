@@ -40,9 +40,13 @@ export class Project extends PluginWrapper implements ZupaProject {
 
 	async run() {
 
-		await this.cache.checkProjectUpToDate(async () => {
-			await this.installDependencies();
-		});
+		await this.cache.checkProjectUpToDate(
+			async () => {
+				await this.installDependencies();
+			},
+			async () => {
+				await this.events.emitSerial('install:after')
+			});
 
 		await this.treatCommands();
 

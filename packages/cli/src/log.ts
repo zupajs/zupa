@@ -1,6 +1,6 @@
 import winston from 'winston';
-import { InkLogTransport } from './output/output';
 import minimist from 'minimist';
+import { InkLogTransport } from './output/log-transport';
 
 const args = minimist(process.argv.slice(2), {
 	boolean: 'verbose',
@@ -14,7 +14,6 @@ const level = args.verbose ? 'verbose' : 'warn';
 type ResultLogger = winston.Logger & {
 	result(res: any): void;
 };
-
 
 winston.addColors({
 	result: 'white',

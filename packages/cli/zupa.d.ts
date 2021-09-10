@@ -4,14 +4,18 @@ export interface TaskConfiguration {
 	handler(...depResults: any[]): any;
 }
 
+export type OutputTransform = 'json' | 'raw' | 'table';
+
 export interface Task<Result = unknown> {
 	name: string;
 	invoked: boolean;
 	configuration: TaskConfiguration;
+	outputTransform: OutputTransform;
 	invoke(force?: boolean): Async<any>;
-	
-	configure<R = Result>(handler: (...depResults: any[]) => Async<R>): Task<R>;
+
+	handle<R = Result>(handler: (...depResults: any[]) => Async<R>): Task<R>;
 	dependsOn(...depTasks: Task[]): Task;
+	preferOutputTransform(outputTransform: OutputTransform): Task<R>;
 }
 
 export type DetailedDependency = {

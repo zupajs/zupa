@@ -1,16 +1,21 @@
-import { Async, Task, TaskConfiguration } from '../../zupa';
+import { Async, OutputTransform, Task, TaskConfiguration } from '../../zupa';
 import minimist from 'minimist';
 import { configStore } from '../config/config';
 import { logger } from '../log';
 
-class TaskImpl implements Task {
+class TaskImpl<R = unknown> implements Task<R> {
 
 	private _invoked = false;
 	_configuration: TaskConfiguration | null = null;
 	_dependencies: Set<Task> = new Set()
 	private _result: any;
+	private _outputTransform: OutputTransform = 'raw';
 
 	constructor(private _name: string) {
+	}
+
+	get outputTransform() {
+		return this._outputTransform;
 	}
 
 	get invoked() {
@@ -21,6 +26,10 @@ class TaskImpl implements Task {
 		return this._name;
 	}
 
+	get dependencies() {
+		return this._dependencies;
+	}
+
 	get configuration() {
 		if (!this._configuration) {
 			throw new Error(`Task '${this.name}' is not configured yet`)
@@ -28,16 +37,21 @@ class TaskImpl implements Task {
 		return this._configuration as TaskConfiguration;
 	}
 
-	configure(handler: () => Async<unknown>) {
+	handle(handler: () => Async<unknown>) {
 		this._configuration = { handler };
 
 		return this;
 	}
 
-	dependsOn(...depTasks: Task[]): Task {
+	dependsOn(...depTasks: Task[]): Task<R> {
 
 		depTasks.forEach(depTask => this._dependencies.add(depTask));
 
+		return this;
+	}
+
+	preferOutputTransform(outputTransform: OutputTransform): Task<R> {
+		this._outputTransform = outputTransform;
 		return this;
 	}
 
@@ -112,6 +126,11 @@ export class TaskRegistry {
 
 		const result = await task.invoke(forceTasks)
 
-		logger.result({ message: result })
+		logger.result({
+			message: result,
+			data: {
+				preferredTransform: task.outputTransform
+			}
+		})
 	}
 }

@@ -22,7 +22,7 @@ project(({
 
 	tasks(task => {
 
-		const yoo = task('yoo').configure(() => {
+		const yoo = task('yoo').handle(() => {
 
 			const subPl = require('sub-plugin')
 
@@ -30,7 +30,7 @@ project(({
 
 		})
 
-		const yoo2 = task('yoo2').configure(() => {
+		const yoo2 = task('yoo2').handle(() => {
 
 			const subPl = require('sub-plugin')
 
@@ -40,7 +40,7 @@ project(({
 
 
 		task('moo')
-			.configure((yooSay, yooSay2) => {
+			.handle((yooSay, yooSay2) => {
 
 				const cowsay = require('cowsay')
 				return yooSay + yooSay2 + cowsay.say({

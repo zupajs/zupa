@@ -12,7 +12,7 @@ project(({
 	tasks(task => {
 
 		task('npm:publish')
-			.configure(() => {
+			.handle(() => {
 				const dependencies = project.packageManager.dependencies;
 
 				const out = dependencies.map(dep => {

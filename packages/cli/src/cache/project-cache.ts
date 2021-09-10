@@ -6,25 +6,29 @@ import * as fs from 'fs';
 import { logger } from '../log';
 
 const cacheFolder = path.resolve(process.cwd(), 'node_modules', '.zupa', 'cache')
+const cacheFile = path.resolve(cacheFolder, 'project-hash')
 
 export class ProjectCache {
 
 	constructor(private readonly project: Project) {}
 
-	async checkProjectUpToDate(updateCallback: () => Promise<void>) {
+	async checkProjectUpToDate(updateCallback: () => Promise<void>, upToDateCallback: () => Promise<void>) {
 
 		const projectHash = await this.hashPlugin(this.project)
-		const projecHashPath = path.resolve(cacheFolder, projectHash)
 
-		if (fs.existsSync(projecHashPath)) {
+		if (fs.existsSync(cacheFile) &&
+			fs.readFileSync(cacheFile, { encoding: 'utf-8' }) === projectHash) {
+
+			await upToDateCallback();
+
 			logger.info('🪄 Project is up-to-date')
 			return;
 		}
 
-		this.prepareCacheFolder();
+		logger.info('Project files have been changed.')
+		logger.info(`Write project hash in ${cacheFile}`)
 
-		logger.info(`Write project hash in ${projecHashPath}`)
-		fs.writeFileSync(projecHashPath, '', { encoding: 'utf-8' })
+		this.writeCacheFile(projectHash);
 
 		await updateCallback()
 	}
@@ -39,12 +43,14 @@ export class ProjectCache {
 		return hasha(pluginSelfHash + childrenHash);
 	}
 
-	private prepareCacheFolder() {
-		if (!fs.existsSync(cacheFolder)){
+	private writeCacheFile(projectHash: string) {
+		if (!fs.existsSync(cacheFolder)) {
 			logger.info(`Create cache folder ${cacheFolder}`)
 			fs.mkdirSync(cacheFolder, {
 				recursive: true
 			})
 		}
+
+		fs.writeFileSync(cacheFile, projectHash, { encoding: 'utf-8' })
 	}
 }
