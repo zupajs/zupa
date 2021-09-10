@@ -25,7 +25,6 @@ export function Output({ logTransport, logLevel }: PropTypes) {
 			const message = entry.message;
 			const data = entry.data;
 
-
 			const record = {
 				level, message, data
 			} as LogRecord;
@@ -36,7 +35,7 @@ export function Output({ logTransport, logLevel }: PropTypes) {
 	}, [])
 
 	let lastMessage: LogRecord = { level: '', message: '', data: undefined };
-	const resultEntry = logRecords.find(entry => entry.level === 'result')
+	const resultEntry = logRecords.find(entry => entry.level === 'result');
 
 	if (resultEntry) {
 		lastMessage = resultEntry
@@ -46,7 +45,7 @@ export function Output({ logTransport, logLevel }: PropTypes) {
 		lastMessage = logRecords[logRecords.length - 1]
 	}
 
-	const message = formatLogRecord(lastMessage);
+	const message = formatLogRecord(lastMessage, logLevel);
 
 	if (typeof message !== 'string') {
 		return createElement(message, {}, null)
@@ -56,7 +55,7 @@ export function Output({ logTransport, logLevel }: PropTypes) {
 		return createElement(React.Fragment, null,
 
 			...logRecords.map(entry => {
-				const formattedRecord = formatLogRecord(entry);
+				const formattedRecord = formatLogRecord(entry, logLevel);
 
 				if (typeof formattedRecord === 'string') {
 

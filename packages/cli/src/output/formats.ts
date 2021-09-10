@@ -61,7 +61,7 @@ export function logLevelColor(level: string) {
 	}
 }
 
-export function formatLogRecord(logRecord: LogRecord) {
+export function formatLogRecord(logRecord: LogRecord, logLevel: string) {
 
 	if (logRecord.level === 'result') {
 		return formatResult(logRecord)
@@ -76,10 +76,22 @@ export function formatLogRecord(logRecord: LogRecord) {
 	const formattedLevel = logLevelColor(logRecord.level);
 	const formattedMessage = color(rawMessage);
 
-	let baseMessage = `${formattedLevel}\t${formattedMessage}`;
+	const baseMessage = `${formattedLevel}\t${formattedMessage}`;
+
 	if (logRecord.data !== undefined) {
+
+		if (logRecord.level === 'error' && (logRecord.data?.cause ?? false)) {
+
+			if (logLevel === 'verbose') {
+				const cause = logRecord.data.cause.stack;
+				return `${baseMessage}${cause}`;
+			}
+
+			return baseMessage;
+		}
+
 		const formattedData = JSON.stringify(logRecord.data, null, 0);
-		baseMessage = `${baseMessage}\n${formattedData}`
+		return `${baseMessage}\n${formattedData}`
 	}
 	return baseMessage;
 }

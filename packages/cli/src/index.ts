@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Project } from './project';
-//import { attachOutput } from './output/output';
+import { logger } from './log';
 
 export async function main(defaultPackageFile = './project.js') {
 
@@ -9,41 +9,33 @@ export async function main(defaultPackageFile = './project.js') {
 	});
 
 	let exitCode = 0;
-	let projectObject = null;
 
 	try {
 		if (fs.existsSync(defaultPackageFile)) {
 
 			const project = new Project(defaultPackageFile);
 
-			//await attachOutput(project);
-
 			await project.load();
 
 			await project.run();
 		}
 		else {
-			throw new Error(`No package.js found in current folder: ${process.cwd()}`)
+			throw new Error(`No ${defaultPackageFile} found in current folder: ${process.cwd()}`)
 		}
 	}
-	catch (e) {
+	catch (e: any) {
 		// TODO 27-Aug-2021/zslengyel: get exitCode from error if possible
 		exitCode = 1;
 
-		//if (projectObject && projectObject.log) {
-		//	// TODO 16-Aug-2021/zslengyel: better error handling
-		//	await projectObject.log.error(e.message + '\n\n' + e.stack)
-		//} else {
-		//	throw e; // throw error towards as there is nothing that handles
-		//}
-		throw e;
-
+		logger.error({
+			message: e.message,
+			data: {
+				cause: e
+			}
+		})
 	}
 	finally {
-		//if (projectObject) {
-		//	await projectObject.events.emitSerial('finally')
-		//	// eslint-disable-next-line no-process-exit
-		//	process.exit(exitCode)
-		//}
+		// eslint-disable-next-line no-process-exit
+		process.exit(exitCode)
 	}
 }
