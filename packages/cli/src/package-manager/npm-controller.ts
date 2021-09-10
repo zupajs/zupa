@@ -19,13 +19,11 @@ export interface Package {
 	version: string;
 }
 
-export class NpmManager {
+export class NpmController {
 
 	private installedPackageList!: PackageList;
 
 	async prepare() {
-
-		await this.acquireInstalledPackageList()
 
 		// npm will install packages in current folder, if node_modules is already present
 		const nmPath = path.resolve(process.cwd(), 'node_modules')
@@ -78,7 +76,7 @@ export class NpmManager {
 
 	}
 
-	private async findMissingPackages(desiredPackages: Package[]) {
+	private async findMissingPackages(desiredPackages: Package[]): Promise<Package[]> {
 		const packageList = await this.acquireInstalledPackageList()
 		const installedDeps = Object.entries(packageList.dependencies)
 

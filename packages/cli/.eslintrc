@@ -2,7 +2,7 @@
 	"root": true,
 	"parser": "@typescript-eslint/parser",
 	"env": {
-		"node"
+		"node": true
 	},
 	"plugins": [
 		"@typescript-eslint"
@@ -12,6 +12,9 @@
 		"plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended"
 	],
+	"globals": {
+		"project": "readonly"
+	},
 	"rules": {
 	},
 	"ignorePatterns": [

@@ -1,4 +1,4 @@
-import { NpmManager, Package } from './npm-manager';
+import { NpmController, Package } from './npm-controller';
 import { groupBy } from 'lodash';
 import CryptoJS from 'crypto-js';
 import { PluginWrapper } from '../plugin/plugin-wrapper';
@@ -32,7 +32,7 @@ type DepsRegistry = Dep[];
 export class PackageManager {
 
 	constructor(
-		protected npmManager = new NpmManager(),
+		protected npmManager = new NpmController(),
 		protected readonly _dependencies: DepsRegistry = []
 	) {}
 

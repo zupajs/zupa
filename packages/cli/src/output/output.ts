@@ -3,8 +3,11 @@ import React from 'react';
 import { Newline, render, Text, useStderr } from 'ink';
 import chalk from 'chalk';
 import Transport from 'winston-transport';
+import minimist from 'minimist';
 
 const { useState, useEffect, createElement } = React;
+
+const argv = minimist(process.argv.slice(2))
 
 const formatResult = (message: any) => {
 	// TODO 19-Aug-2021/zslengyel: handle sophsticated
@@ -12,7 +15,10 @@ const formatResult = (message: any) => {
 	if (typeof message === 'string') {
 		return message
 	}
-	return JSON.stringify(message, null, 3);
+
+	const space = argv.pretty ? 3 : 0;
+
+	return JSON.stringify(message, null, space);
 };
 
 const logLevelColor = (level: string) => {
@@ -47,7 +53,7 @@ const formatLogRecord = (logEntry: LogRecord) => {
 
 	let baseMessage = `${formattedLevel}\t${formattedMessage}`;
 	if (logEntry.data !== undefined) {
-		const formattedData = JSON.stringify(logEntry.data, null, 3);
+		const formattedData = JSON.stringify(logEntry.data, null, 0);
 		baseMessage = `${baseMessage}\n${formattedData}`
 	}
 	return baseMessage;

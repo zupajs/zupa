@@ -1,16 +1,17 @@
 import winston from 'winston';
 
 export interface TaskConfiguration {
-	handler(): any;
+	handler(...depResults: any[]): any;
 }
 
-export interface Task {
+export interface Task<Result = unknown> {
 	name: string;
 	invoked: boolean;
 	configuration: TaskConfiguration;
-	invoke(): Async<any>;
+	invoke(force?: boolean): Async<any>;
 	
-	configure(handler: () => Async<T>): Task;
+	configure<R = Result>(handler: (...depResults: any[]) => Async<R>): Task<R>;
+	dependsOn(...depTasks: Task[]): Task;
 }
 
 export type DetailedDependency = {
@@ -24,7 +25,6 @@ export type Dependency = string | DetailedDependency;
 export type Dependencies = Dependency[];
 
 export type PluginOptions = {
-	id?: string;
 	[opt: string]: unknown;
 }
 export type DetailedPluginImport =  [string, PluginOptions];

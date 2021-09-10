@@ -18,8 +18,13 @@ import { ProjectDefinition } from './project-definition';
 import { ProjectAware } from './project-aware';
 import { isArray } from 'lodash'
 import { logger } from '../log';
+import { parsePluginPath } from './plugin-utils';
+import { ZUPA_DIR } from '../zupa-dir';
+
+const ZUPA_PACAKGE_PREFIX = '@zupa';
 
 export type PluginImportConfig = {
+	id?: string;
 	path: string;
 	options: PluginOptions;
 };
@@ -39,8 +44,8 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	get id(): string {
-		if (this.pluginImport.options?.id) {
-			return this.pluginImport.options.id;
+		if (this.pluginImport.id) {
+			return this.pluginImport.id;
 		}
 
 		return path.dirname(this.pluginPath)
@@ -55,18 +60,23 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	get pluginImport(): PluginImportConfig {
+
 		const pluginImport = this._pluginImport;
 
 		if (typeof pluginImport === 'string') {
+			const { id, path } = parsePluginPath(pluginImport);
 			return {
-				path: pluginImport,
+				id,
+				path,
 				options: {}
 			}
 		}
 
 		if (isArray(pluginImport) && pluginImport.length > 0) {
+			const { id, path } = parsePluginPath(pluginImport[0]);
 			return {
-				path: pluginImport[0],
+				id,
+				path,
 				options: pluginImport[1] || {} // note: options is optional
 			}
 		}
@@ -79,7 +89,9 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	async load(): Promise<void> {
-		await this.events.emitSerial('load:before');
+		await this.events.emitSerial('load:before', {
+			plugin: this
+		});
 
 		let teardownCallback;
 		try {
@@ -97,7 +109,9 @@ export class PluginWrapper extends ProjectAware {
 
 			await this.invokeProjectBuilder(projectBuilder)
 
-			await this.events.emitSerial('load:after');
+			await this.events.emitSerial('load:after', {
+				plugin: this
+			});
 		}
 		catch (e) {
 			throw new Error(`while loading ${this.pluginImport.path}
@@ -122,6 +136,11 @@ export class PluginWrapper extends ProjectAware {
 		if (ext === '.ts') {
 			workingPluginAccess = await compile(pluginPath)
 			teardown = () => fs.rmSync(workingPluginAccess)
+		}
+
+		if (pluginPath.startsWith(ZUPA_PACAKGE_PREFIX)) {
+			const zupaPath = pluginPath.replace(ZUPA_PACAKGE_PREFIX, ZUPA_DIR);
+			workingPluginAccess = zupaPath;
 		}
 
 		// TODO 02-Sep-2021/zslengyel: better handling
@@ -259,7 +278,7 @@ export class PluginWrapper extends ProjectAware {
 		return null;
 	}
 
-	toString() {
+	toString(): string {
 		return this.pluginPath
 	}
 }

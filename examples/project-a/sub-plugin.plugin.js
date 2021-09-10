@@ -10,10 +10,10 @@ project(({
 	])
 
 	return {
-		welcome: () => {
+		welcome: (say ='sub') => {
 			const yosay = require('yosay')
 
-			return yosay('sub')
+			return yosay(say)
 		}
 	}
 })

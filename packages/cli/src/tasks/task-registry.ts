@@ -7,6 +7,8 @@ class TaskImpl implements Task {
 
 	private _invoked = false;
 	_configuration: TaskConfiguration | null = null;
+	_dependencies: Set<Task> = new Set()
+	private _result: any;
 
 	constructor(private _name: string) {
 	}
@@ -32,21 +34,46 @@ class TaskImpl implements Task {
 		return this;
 	}
 
-	public async invoke(): Promise<unknown> {
-		return await this.configuration.handler();
+	dependsOn(...depTasks: Task[]): Task {
+
+		depTasks.forEach(depTask => this._dependencies.add(depTask));
+
+		return this;
 	}
 
+	public async invoke(force = false): Promise<unknown> {
+		if (!force && this._invoked) {
+			return this._result;
+		}
+
+		const depResults = await this.invokeDependencies(force)
+
+		this._invoked = true;
+
+		const handler = this.configuration.handler;
+		this._result = await handler.call(null, ...depResults);
+
+		return this._result;
+	}
+
+	private async invokeDependencies(force: boolean) {
+		const results = Array.from(this._dependencies.values()).map(task => {
+			return task.invoke(force)
+		}) as Promise<any>[];
+
+		return await Promise.all(results);
+	}
 }
 
 export class TaskRegistry {
 
 	private _tasks = new Map<string, Task>();
 
-	get tasks() {
+	get tasks(): Map<string, Task> {
 		return this._tasks;
 	}
 
-	get(name: string) {
+	get(name: string): Task {
 		if (this.tasks.has(name)) {
 			return this.tasks.get(name)!
 		}
@@ -59,9 +86,15 @@ export class TaskRegistry {
 	}
 
 	async invoke() {
-		const parsed = minimist(process.argv.splice(2));
+		const parsed = minimist(process.argv.splice(2), {
+			boolean: 'forceTasks',
+			alias: {
+				f: 'forceTasks'
+			}
+		});
 
 		let taskName = parsed._[0];
+		const forceTasks = parsed.forceTasks as boolean;
 
 		if ((taskName || '').length === 0) {
 			taskName = configStore.get().tasks.default;
@@ -77,7 +110,7 @@ export class TaskRegistry {
 
 		const task = this.tasks.get(taskName)!
 
-		const result = await task.invoke()
+		const result = await task.invoke(forceTasks)
 
 		logger.result({ message: result })
 	}

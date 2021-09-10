@@ -1,6 +1,8 @@
 import path from 'path';
 import webpack, { Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+
 
 const config: Configuration = {
 	entry: './main.ts',
@@ -34,6 +36,7 @@ const config: Configuration = {
 		extensions: ['.ts', '.js'],
 	},
 	plugins: [
+		new CleanWebpackPlugin(),
 		new webpack.BannerPlugin({
 			banner: '#!/usr/bin/env node',
 			raw: true, // if true, banner will not be wrapped in a comment
@@ -42,6 +45,7 @@ const config: Configuration = {
 		new CopyPlugin({
 			patterns: [
 				{ from: 'src/core-plugins', to: 'core-plugins' },
+				{ from: 'src/plugins', to: 'plugins' },
 			],
 		}),
 	],
