@@ -44,7 +44,7 @@ export class NpmController {
 		const packages = await this.findMissingPackages(desiredPackages)
 
 		if (packages.length === 0) {
-			logger.info('✅ Packages are up to date', desiredPackages)
+			logger.info('✅  Packages are up to date', desiredPackages)
 			return;
 		}
 
@@ -104,11 +104,15 @@ export class NpmController {
 	}
 
 	public async getAvailableVersions(packageName: string) {
-		const res = await execa('npm', ['view', packageName, '--json', 'versions'], {
-			preferLocal: true,
-			stdout: 'pipe'
-		})
+		try {
+			const res = await execa('npm', ['view', packageName, '--json', 'versions'], {
+				preferLocal: true,
+				stdout: 'pipe'
+			})
 
-		return JSON.parse(res.stdout) as string[];
+			return JSON.parse(res.stdout) as string[];
+		} catch (e) {
+			throw new Error('Cannot get available versions');
+		}
 	}
 }

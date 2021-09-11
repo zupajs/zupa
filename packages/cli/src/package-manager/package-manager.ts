@@ -142,10 +142,15 @@ export class PackageManager {
 			const suggestions = [];
 
 			for (const dep of unversionedDeps) {
-				const versions = await this.npmManager.getAvailableVersions(dep.packageName)
-				const version = versions[versions.length - 1]
+				try {
+					const versions = await this.npmManager.getAvailableVersions(dep.packageName)
+					const version = versions[versions.length - 1]
 
-				suggestions.push(`${dep.packageName}@${version}`)
+					suggestions.push(`${dep.packageName}@${version}`)
+				}
+				catch (e) {
+					suggestions.push(`No package found: ${dep.packageName}`);
+				}
 			}
 
 			throw new Error(`Missing versions for npm packages.
