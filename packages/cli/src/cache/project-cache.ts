@@ -22,15 +22,17 @@ export class ProjectCache {
 			await upToDateCallback();
 
 			logger.info('🪄 Project is up-to-date')
-			return;
+		} else {
+
+			logger.info('Project files have been changed.')
+
+			await this.project.events.on('tasks:run:after', async () => {
+				logger.info(`Write project hash in ${cacheFile}`);
+				this.writeCacheFile(projectHash);
+			});
+
+			await updateCallback()
 		}
-
-		logger.info('Project files have been changed.')
-		logger.info(`Write project hash in ${cacheFile}`)
-
-		this.writeCacheFile(projectHash);
-
-		await updateCallback()
 	}
 
 	async hashPlugin(plugin: PluginWrapper): Promise<string> {
