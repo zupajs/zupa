@@ -1,6 +1,4 @@
-import path, { extname } from 'path';
-import { compile } from '../ts-compiler';
-import fs from 'fs';
+import path from 'path';
 import { createProjectEntry } from './project-entry';
 import {
 	Dependencies,
@@ -37,10 +35,14 @@ export class PluginWrapper extends ProjectAware {
 		parent: PluginWrapper | null,
 		protected _pluginImport: PluginImport,
 		protected _children: PluginWrapper[] = [],
-		protected projectDefinition = new ProjectDefinition(),
+		protected _projectDefinition = new ProjectDefinition(),
 		public readonly events: Emittery = new Emittery()
 	) {
 		super(parent);
+	}
+
+	get definition() {
+		return this._projectDefinition;
 	}
 
 	get children(): PluginWrapper[] {
@@ -52,7 +54,7 @@ export class PluginWrapper extends ProjectAware {
 			return this.pluginImport.id;
 		}
 
-		return path.dirname(this.pluginPath)
+		return this.pluginImport.path;
 	}
 
 	get exports() {
@@ -181,7 +183,7 @@ export class PluginWrapper extends ProjectAware {
 	}
 
 	private async treatDependencies() {
-		await acquireValueOfArray(this.projectDefinition.dependencies, async (dependencies) => {
+		await acquireValueOfArray(this._projectDefinition.dependencies, async (dependencies) => {
 
 			// TODO 03-Sep-2021/zslengyel: check duplicate deps
 			dependencies.forEach(deps =>
@@ -192,7 +194,7 @@ export class PluginWrapper extends ProjectAware {
 
 	private async treatPlugins() {
 
-		await acquireValueOfArray(this.projectDefinition.plugins, async (pluginDepsDefs) => {
+		await acquireValueOfArray(this._projectDefinition.plugins, async (pluginDepsDefs) => {
 
 			for (const pluginDeps of pluginDepsDefs) {
 				for (const pluginDep of pluginDeps) {
@@ -213,7 +215,7 @@ export class PluginWrapper extends ProjectAware {
 			await child.treatCommands();
 		}
 
-		const commandsBuilders = this.projectDefinition.tasksBuilders;
+		const commandsBuilders = this._projectDefinition.tasksBuilders;
 
 		const commandBuildings = commandsBuilders.map(async taskBuilder => {
 
@@ -245,16 +247,16 @@ export class PluginWrapper extends ProjectAware {
 
 		return {
 			name: (name: string) => {
-				this.projectDefinition.defineName(name);
+				this._projectDefinition.defineName(name);
 			},
 			plugins: (content: ValueProvider<PluginImports>) => {
-				this.projectDefinition.definePlugins(content)
+				this._projectDefinition.definePlugins(content)
 			},
 			dependencies: (content: ValueProvider<Dependencies>) => {
-				this.projectDefinition.defineDependencies(content);
+				this._projectDefinition.defineDependencies(content);
 			},
 			tasks: (taskBuilder: TasksBuilder) => {
-				this.projectDefinition.defineTasksBuilder(taskBuilder)
+				this._projectDefinition.defineTasksBuilder(taskBuilder)
 			},
 			require: (packageName: string) => {
 				return this.project.requireHelper.require(packageName, this)

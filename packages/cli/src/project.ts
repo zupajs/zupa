@@ -25,7 +25,7 @@ export class Project extends PluginWrapper implements ZupaProject {
 		this.events.on('load:before', async () => {
 			await this.requirePlugin(new PluginWrapper(
 				this,
-				path.resolve(__dirname, './core-plugins/core-plugins.js')
+				'@zupa/core-plugins/core-plugins.js'
 			))
 		})
 	}
@@ -50,11 +50,11 @@ export class Project extends PluginWrapper implements ZupaProject {
 
 		await this.treatCommands();
 
-		await this.events.emitSerial('command:run:before')
+		await this.events.emitSerial('tasks:run:before')
 
 		await this._taskRegistry.invoke();
 
-		await this.events.emitSerial('command:run:after')
+		await this.events.emitSerial('tasks:run:after')
 	}
 
 	private async installDependencies() {
