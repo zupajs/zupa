@@ -8,7 +8,7 @@ export class ProjectAware {
 	get project(): Project {
 
 		if (this.parent === null) {
-			return (this as any) as Project;
+			return (this as unknown as Project);
 		}
 
 		return this.parent.project;

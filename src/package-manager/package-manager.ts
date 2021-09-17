@@ -1,6 +1,6 @@
 import { NpmController, Package } from './npm-controller';
-import { groupBy } from 'lodash';
-import CryptoJS from 'crypto-js';
+import { groupBy } from 'lodash-es';
+import md5 from 'md5';
 import { PluginWrapper } from '../plugin/plugin-wrapper';
 import { Dependencies, DetailedDependency } from '../../zupa';
 import { getCallerSourcePos } from '../common/stacktrace';
@@ -78,20 +78,20 @@ export class PackageManager {
 			duplicate.sources.push(source);
 			duplicate.plugins.push(plugin);
 
-			duplicate.alias = this.generateAlias(dep, ...[plugin, ...duplicate.plugins]);
+			duplicate.alias = generateAlias(dep, ...[plugin, ...duplicate.plugins]);
 
 			logger.verbose(`Linked to existing dependency: ${duplicate.packageName}@${duplicate.version}`);
 			return;
 		}
 
-		let alias = ''
+		let alias;
 		if (dep.noalias === true) {
 
 			alias = dep.packageName;
 		}
 		else {
 
-			alias = this.generateAlias(dep, plugin);
+			alias = generateAlias(dep, plugin);
 		}
 
 		const registered = {
@@ -106,16 +106,6 @@ export class PackageManager {
 		logger.verbose(`Registered dependency: ${registered.packageName}@${registered.version}`);
 
 		this._dependencies.push(registered);
-	}
-
-	private generateAlias(dep: DetailedDependency, ...plugins: PluginWrapper[]) {
-		const paths = plugins.map(plugin => plugin.pluginImport.path).join('');
-
-		const depFootPrint = `${dep.packageName}${dep.version}${paths}`;
-		const hash = CryptoJS.MD5(depFootPrint)
-		const base64Hash = hash.toString();
-
-		return `${dep.packageName}-${base64Hash}`
 	}
 
 	findPackage(packageName: string, plugin: PluginWrapper): Dep {
@@ -179,6 +169,7 @@ Latest versions of packages:
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private validateDependency(dep: DetailedDependency, source: PluginWrapper) {
 		// TODO 06-Sep-2021/zslengyel:
 		//assert.ok(typeof dep.version === 'string' && dep.version.length > 0,
@@ -192,4 +183,14 @@ Latest versions of packages:
 				existing.registry === dep.registry;
 		});
 	}
+}
+
+function generateAlias(dep: DetailedDependency, ...plugins: PluginWrapper[]) {
+	const paths = plugins.map(plugin => plugin.pluginImport.path).join('');
+
+	const depFootPrint = `${dep.packageName}${dep.version}${paths}`;
+	const hash = md5(depFootPrint)
+	const base64Hash = hash.toString();
+
+	return `${dep.packageName}-${base64Hash}`
 }

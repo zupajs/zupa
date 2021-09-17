@@ -3,13 +3,14 @@ import webpack, { Compiler, Configuration } from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as fs from 'fs';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 const config: Configuration = {
 	entry: './src/main.ts',
 	target: 'node',
 	mode: 'production',
 	optimization: {
-		minimize: false
+		minimize: true
 	},
 	module: {
 		rules: [
@@ -36,6 +37,9 @@ const config: Configuration = {
 		extensions: ['.ts', '.js'],
 	},
 	plugins: [
+		new BundleAnalyzerPlugin({
+			analyzerMode: 'disabled' // by default
+		}),
 		new CleanWebpackPlugin(),
 		new webpack.BannerPlugin({
 			banner: '#!/usr/bin/env node',

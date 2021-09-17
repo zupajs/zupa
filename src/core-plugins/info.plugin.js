@@ -43,7 +43,7 @@ async function putBranch(plugin) {
 				}
 				else {
 					return {
-						packageName: chalk.blue(`${dep.packageName}@${dep.version}`),
+						packageName: `${dep.packageName}@${dep.version}`,
 						info: {
 							registry: dep.registry
 						}
@@ -65,7 +65,7 @@ async function acquireValueOf(getter, callback) {
 		return undefined;
 	}
 
-	let value = null;
+	let value;
 
 	if (typeof getter === 'function') {
 		value = await (getter)();

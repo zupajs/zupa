@@ -1,12 +1,8 @@
-project(({ dependencies, tasks, project, require }) => {
-
-	dependencies([
-	])
+project(({ tasks, project }) => {
 
 	tasks($ => {
 
 		$('deps').handle(() => {
-
 			return project.packageManager.dependencies
 		}).preferOutputTransform('table')
 

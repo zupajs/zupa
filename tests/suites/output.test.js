@@ -86,8 +86,8 @@ test('tool support table output', async t => {
 	const res = await zupa(['foo', '--output', 'table'])
 
 	t.is(res.exitCode, 0);
-	t.is(res.stdout, `KEY        VALUE
-some       value`);
+	t.is(res.stdout, `KEY        VALUE     
+some       value     `);
 })
 
 test('tool support raw output', async t => {

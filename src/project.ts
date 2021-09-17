@@ -1,6 +1,5 @@
 import { PluginWrapper } from './plugin/plugin-wrapper';
 import { PackageManager } from './package-manager/package-manager';
-import path from 'path';
 import { RequireHelper } from './plugin/require-helper';
 import { Project as ZupaProject } from '../zupa'
 import { TaskRegistry } from './tasks/task-registry';

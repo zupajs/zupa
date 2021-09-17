@@ -1,15 +1,16 @@
 import chalk from 'chalk';
 import minimist from 'minimist';
-import { FunctionComponent } from 'react';
 import columnify from 'columnify';
 import jsonColor from 'json-colorizer';
 import { LogRecord } from '../../zupa';
 import { configStore } from '../config/config';
+// TODO 17-Sep-2021/zslengyel: find out why ESlint does not recognize
+//eslint-disable-next-line node/no-missing-import
 import treeify from 'treeify';
 
 const argv = minimist(process.argv.slice(2));
 
-export function formatResult(logRecord: LogRecord): string | FunctionComponent {
+export function formatResult(logRecord: LogRecord): string | (() => string) {
 
 	const outputTransform = argv.output ?? logRecord.data?.preferredTransform ?? 'raw';
 
@@ -98,7 +99,7 @@ export function logLevelColor(level: string) {
 	}
 }
 
-export function formatLogRecord(logRecord: LogRecord, logLevel: string) {
+export function formatLogRecord(logRecord: LogRecord, logLevel: string): string | (() => string) {
 
 	if (logRecord.level === 'result') {
 		return formatResult(logRecord)

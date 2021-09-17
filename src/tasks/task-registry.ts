@@ -8,7 +8,7 @@ class TaskImpl<R = unknown> implements Task<R> {
 	private _invoked = false;
 	_configuration: TaskConfiguration | null = null;
 	_dependencies: Set<Task> = new Set()
-	private _result: any;
+	private _result: unknown;
 	private _outputTransform: OutputTransform = 'raw';
 
 	constructor(private _name: string) {
@@ -73,7 +73,7 @@ class TaskImpl<R = unknown> implements Task<R> {
 	private async invokeDependencies(force: boolean) {
 		const results = Array.from(this._dependencies.values()).map(task => {
 			return task.invoke(force)
-		}) as Promise<any>[];
+		}) as Promise<unknown>[];
 
 		return await Promise.all(results);
 	}
@@ -89,7 +89,9 @@ export class TaskRegistry {
 
 	get(name: string): Task {
 		if (this.tasks.has(name)) {
-			return this.tasks.get(name)!
+			// Map interface does not support generics, TypeScript does not recognize
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			return this.tasks.get(name)!;
 		}
 
 		const task = new TaskImpl(name);

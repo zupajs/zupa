@@ -2,7 +2,7 @@ import winston from 'winston';
 import { inkLogTransport, level } from './output/log-transport';
 
 type ResultLogger = winston.Logger & {
-	result(res: any): void;
+	result(res: unknown): void;
 };
 
 winston.addColors({

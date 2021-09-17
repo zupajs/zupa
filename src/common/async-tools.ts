@@ -5,7 +5,7 @@ export type OptionalAsync<T, Param = void> = ValueProvider<T, Param> | undefined
 export async function acquireValueOfArray<T, Param = void>(
 	getters: OptionalAsync<T, Param>[],
 	callback: (val: T[]) => Promise<void>,
-	callbackParams: any[] = []
+	callbackParams: unknown[] = []
 ) {
 
 	const getterPromises = getters.map(getter => {
@@ -22,20 +22,22 @@ export async function acquireValueOfArray<T, Param = void>(
 
 }
 
+type FunctionGetter<T> = (...params: unknown[]) => Promise<T>;
+
 export async function acquireValueOf<T, Param = void>(
 	getter: OptionalAsync<T, Param>,
 	callback: (val: T) => Promise<void>,
-	callbackParams: any[] = []
+	callbackParams: unknown[] = []
 ) {
 
 	if (!getter) {
 		return undefined;
 	}
 
-	let value: T | null = null;
+	let value: T | null;
 
 	if (typeof getter === 'function') {
-		value = await ((getter as Function).apply(null, callbackParams));
+		value = await (getter as FunctionGetter<T>)(...callbackParams);
 	}
 	else {
 		value = getter as T;
