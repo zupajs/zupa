@@ -1,7 +1,7 @@
 const test = require("ava");
 const setup = require("../common/setup");
 
-test('project.js is loaded', async t => {
+test('project.js is loaded and has info tasks', async t => {
 	const { project, zupa } = setup(t)
 	project.volume({
 		'./project.js': ``
