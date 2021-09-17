@@ -1,3 +1,6 @@
+import 'core-js';
+import 'regenerator-runtime';
+
 import { main } from './index'
 import { resolve } from 'path';
 
