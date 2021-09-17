@@ -1,6 +1,6 @@
 {
-	"name": "zupa",
-	"version": "0.0.2",
+	"name": "@zupajs/zupa",
+	"version": "0.0.3",
 	"description": "",
 	"license": "MIT",
 	"author": "Zsolt Lengyel",
