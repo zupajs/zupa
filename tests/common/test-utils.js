@@ -20,15 +20,17 @@ function stripIndent(string) {
 	return string.replace(regex, '');
 }
 
+const { basename, resolve } = require('path')
+const { mkdirSync, existsSync, rmdirSync, writeFileSync } = require('fs')
+
+const projectsPath = resolve(__dirname, '..', '..', 'test_projects');
+
 function createTestProject(testName) {
 
 	const filename = testName.replace(/ /g, '_')
 
-	const { basename, resolve } = require('path')
-	const { mkdirSync, existsSync, rmdirSync, writeFileSync } = require('fs')
 	const testBaseName = basename(filename)
 
-	const projectsPath = resolve(process.cwd(), 'test_projects')
 	const testProjectPath = resolve(projectsPath, `${testBaseName}_project`);
 
 	if (existsSync(testProjectPath)) {
@@ -37,11 +39,24 @@ function createTestProject(testName) {
 	}
 	mkdirSync(testProjectPath, { recursive: true })
 
-	const volume = vol => {
+	const volume = (vol, basePath = testProjectPath) => {
+
 		for (const [volumeFile, content] of Object.entries(vol)) {
-			const volumeFilePath = resolve(testProjectPath, volumeFile)
-			const stripped = stripIndent(content)
-			writeFileSync(volumeFilePath, stripped, 'utf-8')
+			// handle dirs
+			if (typeof content === 'object') {
+				mkdirSync(resolve(basePath, volumeFile), {
+					recursive: true
+				});
+
+				volume(content, resolve(basePath, volumeFile));
+
+			} else {
+				// handle files
+
+				const volumeFilePath = resolve(basePath, volumeFile)
+				const strippedContent = stripIndent(content)
+				writeFileSync(volumeFilePath, strippedContent, 'utf-8')
+			}
 		}
 	}
 

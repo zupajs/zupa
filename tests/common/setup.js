@@ -15,7 +15,7 @@ module.exports = function (t) {
 
 	const zupa = async (args = [], opts = {}) => {
 		const nodeJs = process.argv[0]
-		const zupa = resolve(__dirname, '../../../cli/dist/zupa.js');
+		const zupa = resolve(__dirname, '../../dist/zupa.js');
 
 		const res = await execa(nodeJs, [zupa, ...args], {
 			cwd: path,
