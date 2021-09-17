@@ -1,154 +1,115 @@
-import { Chalk } from 'chalk';
-import * as minimist from 'minimist';
-import * as Emittery from 'emittery';
+import winston from 'winston';
+import chalk from 'chalk';
 
-
-export interface ScriptDefinition {
-	(...params: string[]): void | Promise<void>;
+export interface LogRecord {
+	level: string;
+	message: string | any | number;
+	data: any;
 }
 
-export interface ScriptRegistryApi {
-	script(name: string, scriptFn: ScriptDefinition): void;
+export interface TaskConfiguration {
+	handler(...depResults: any[]): any;
 }
 
-export interface ScriptRegistryController {
-	run(): Promise<void>
+export type OutputTransform = 'json' | 'raw' | 'table' | 'tree' | string;
+
+export interface Task<Result = unknown> {
+	name: string;
+	invoked: boolean;
+	configuration: TaskConfiguration;
+	outputTransform: OutputTransform;
+
+	invoke(force?: boolean): Async<any>;
+
+	handle<R = Result>(handler: (...depResults: any[]) => Async<R>): Task<R>;
+
+	dependsOn(...depTasks: Task[]): Task;
+
+	preferOutputTransform(outputTransform: OutputTransform): Task<R>;
 }
 
-export interface ScriptRegistryStore {
-	[name: string]: (...params) => void | Promise<void>;
-}
-
-export interface ScriptRegistry {
-	api: ScriptRegistryApi;
-	controller: ScriptRegistryController;
-	registry: ScriptRegistryStore;
-}
-
-
-export interface ProjectObject {
-	argv: minimist.ParsedArgs;
-	__dirname: string;
-	events: Emittery;
-	pkg: any; // TODO find package.jsom schema
-	on: any; // TODO 17-Aug-2021/zslengyel:
-	emit: any; // TODO 17-Aug-2021/zslengyel:
-	dependencyRegistry: DependencyRegistry;
-	scriptRegistry: ScriptRegistry;
-
-	run(): Promise<void>
-}
-
-export type PrepareContext = { plugin: PluginLoadInstruction } &
-	DependencyRegistryPrepareApi &
-	{project: ProjectObject};
-
-export interface PrepareCallback {
-	(context: PrepareContext): (void | Promise<void>);
-}
-
-export interface PrepareBlock {
-	(callback: PrepareCallback): (void | Promise<void>);
-}
-
-export interface PrepareController {
-	run(): Promise<void>
-}
-
-export interface Preparer {
-	prepare: PrepareBlock;
-	controller: PrepareController;
-}
-
-
-export interface PluginLoadInstruction {
-	(path: string): Promise<void>;
-}
-
-export interface Log {
-	(...args: any[]): void;
-
-	isVerbose: boolean;
-
-	info(...args: any[]): void;
-
-	error(...args: any[]): void;
-}
-
-declare enum DepType {
-	projectDep = 'projectDep',
-	dep = 'dep',
-	devDep = 'devDep'
-}
-
-export interface DependencyDescriptor {
+export type DetailedDependency = {
 	packageName: string;
 	version: string;
-	type: DepType;
+	registry?: string;
+	noalias?: boolean;
+};
+
+export type Dependency = string | DetailedDependency;
+export type Dependencies = Dependency[];
+
+export interface Config {
+	tasks: {
+		default: string;
+	};
+	output: {
+		formatters: {
+			[key: string]: (logRecord: LogRecord) => string;
+		}
+	};
+	deps: {
+		removePackageJson: boolean;
+	},
+	log: {
+		verbose: boolean;
+	};
+
+	[key: string]: unknown;
 }
 
-export interface DependencyRegistryStore {
-	deps: DependencyDescriptor[];
+export type PluginOptions = {
+	[opt: string]: unknown;
+}
+export type DetailedPluginImport = [string, PluginOptions];
+export type PluginImport = string | DetailedPluginImport;
+export type PluginImports = PluginImport[];
+
+export type Async<T> = Promise<T> | T;
+export type ValueProvider<T, Parameter = void> = T | ((param: Parameter) => Async<T>)
+
+export type TasksBuilder = (taskGetter: (name: string) => Task) => Promise<void>;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Project {}
+
+export interface ProjectContext {
+
+	dependencies: (content: ValueProvider<Dependencies>) => void;
+
+	plugins: (content: ValueProvider<PluginImports>) => void;
+
+	name: (name: string) => void;
+
+	// TODO 04-Sep-2021/zslengyel:
+	tasks: (taskBuilder: TasksBuilder) => Async<void>;
+
+	require: <T = any>(pack: string) => T;
+
+	project: Project;
+
+	options: any;
+
+	logger: winston.Logger;
+
+	config: Config;
+	configure: (configBuilder: ValueProvider<Partial<Config>, Config>) => void;
+
+	utils: {
+		chalk: typeof chalk;
+		[custom: string]: any;
+	}
 }
 
-export interface DependencyRegistryController {
-	addDepsToPackageJson(pkg: any): Promise<void>
-
-	installProjectDeps();
-
-	installDeps(): Promise<void>;
+export interface ProjectBuilder {
+	(projectContext: ProjectContext): Async<void>;
 }
 
-export interface DependencyRegistryDefineApi {
-	dep(npmPackage: string): void;
-
-	devDep(npmPackage: string): void;
-}
-
-export interface DependencyRegistryPrepareApi {
-	projectDep(npmPackage): void;
-}
-
-export interface PackageManager {
-	getAvailableVersions(packageName: string): Promise<string[]>;
-	install(deps: string[]): Promise<void>;
-
-	toString(): string;
-}
-
-export interface DependencyRegistry {
-	registry: DependencyRegistryStore;
-	controller: DependencyRegistryController;
-	prepareApi: DependencyRegistryPrepareApi;
-	defineApi: DependencyRegistryDefineApi;
-	setPackageManager(pm: PackageManager): void;
-}
-
-
-export type DefineContext = ScriptRegistryApi &
-	{ project: ProjectObject } &
-	{ log: Log } &
-	{ pkg: any; } &
-	DependencyRegistryDefineApi;
-
-export interface DefineBuilder {
-	(context: DefineContext): (void | Promise<void>);
-}
-
-
-export interface DefineBlock {
-	(callback: DefineBuilder): (void | Promise<void>);
-}
-
-export interface Definer {
-	define: DefineBlock;
+export interface ProjectEntry {
+	(projectBuilder: ProjectBuilder): void;
 }
 
 declare global {
-	const prepare: PrepareBlock;
-	const define: DefineBlock;
-	const log: Log;
-	const chalk: Chalk;
+	const project: ProjectEntry;
 }
 
 export default global;

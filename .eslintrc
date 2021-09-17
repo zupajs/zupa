@@ -1,0 +1,60 @@
+{
+	"root": true,
+	"extends": [
+		"eslint:recommended",
+		"plugin:node/recommended"
+	],
+	"ignorePatterns": [
+		"**/node_modules/**",
+		"node_modules/**",
+		"_src/**"
+	],
+	"env": {
+		"node": true,
+		"es2020": true
+	},
+	"overrides": [
+		{
+			"files": [
+				"*.ts"
+			],
+			"parser": "@typescript-eslint/parser",
+			"plugins": [
+				"@typescript-eslint"
+			],
+			"settings": {
+				"node": {
+					"tryExtensions": [".ts", ".d.ts"]
+				}
+			},
+			"extends": [
+				"eslint:recommended",
+				"plugin:@typescript-eslint/eslint-recommended",
+				"plugin:@typescript-eslint/recommended"
+			],
+			"parserOptions": {
+				"project": "./tsconfig.json",
+				"ecmaVersion": 2018,
+				"sourceType": "module"
+			},
+			"rules": {
+				"node/no-unsupported-features/es-syntax": [
+					"error",
+					{ "ignores": ["modules"] }
+				],
+				"@typescript-eslint/explicit-module-boundary-types": 0
+			}
+		}
+	],
+	"globals": {
+		"project": "readonly"
+	},
+	"parser": "@babel/eslint-parser",
+	"parserOptions": {
+		// Only ESLint 6.2.0 and later support ES2020.
+		"ecmaVersion": 2020,
+		"sourceType": "module",
+		"requireConfigFile": false
+	}
+
+}
