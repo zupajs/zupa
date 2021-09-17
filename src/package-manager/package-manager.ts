@@ -5,6 +5,7 @@ import { PluginWrapper } from '../plugin/plugin-wrapper';
 import { Dependencies, DetailedDependency } from '../../zupa';
 import { getCallerSourcePos } from '../common/stacktrace';
 import { logger } from '../log';
+import { parsePackageName } from './package-name-utils';
 
 class DepSource {
 
@@ -50,11 +51,10 @@ export class PackageManager {
 		);
 
 		for (const dep of dependencyList) {
+
 			if (typeof dep === 'string') {
 
-				const parts = dep.split('@')
-				const packageName = parts[0];
-				const version = parts[1];
+				const { packageName, version } = parsePackageName(dep);
 
 				this.addDep({
 					packageName,

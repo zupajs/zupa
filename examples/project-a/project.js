@@ -8,6 +8,7 @@ project(({
 	dependencies([
 		'cowsay@1.5.0',
 		'lodash@4.17.21',
+		'@react-google-maps/api@2.2.0',
 		{ packageName: 'jquery', version: '3.6.0', registry: 'https://registry.npmjs.org', noalias: true }
 	])
 
@@ -23,6 +24,8 @@ project(({
 	tasks(task => {
 
 		const yoo = task('yoo').handle(() => {
+
+			const zupa = require('@react-google-maps/api');
 
 			const subPl = require('sub-plugin')
 
