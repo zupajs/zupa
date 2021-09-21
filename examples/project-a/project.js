@@ -54,6 +54,8 @@ project(({
 			})
 			.dependsOn(yoo, yoo2)
 
+		task('error')
+
 	})
 
 })

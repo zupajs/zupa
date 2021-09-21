@@ -5,12 +5,12 @@ import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import * as fs from 'fs';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
-const config: Configuration = {
+const config: (env: any, arg: any) => Configuration = (env) => ({
 	entry: './src/main.ts',
 	target: 'node',
 	mode: 'production',
 	optimization: {
-		minimize: true
+		minimize: !env.noMin
 	},
 	module: {
 		rules: [
@@ -65,5 +65,5 @@ const config: Configuration = {
 		path: path.resolve(__dirname, 'dist'),
 		filename: 'zupa.js',
 	}
-};
+});
 export default config;

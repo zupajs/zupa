@@ -1,11 +1,11 @@
 import { NpmController, Package } from './npm-controller';
-import { groupBy } from 'lodash-es';
 import md5 from 'md5';
 import { PluginWrapper } from '../plugin/plugin-wrapper';
 import { Dependencies, DetailedDependency } from '../../zupa';
 import { getCallerSourcePos } from '../common/stacktrace';
 import { logger } from '../log';
 import { parsePackageName } from './package-name-utils';
+import { groupBy } from '../common/collections';
 
 class DepSource {
 

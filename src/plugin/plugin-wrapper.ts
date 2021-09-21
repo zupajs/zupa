@@ -15,7 +15,6 @@ import { acquireValueOfArray } from '../common/async-tools';
 import Emittery from 'emittery';
 import { ProjectDefinition } from './project-definition';
 import { ProjectAware } from './project-aware';
-import { isArray } from 'lodash-es'
 import { logger } from '../log';
 import { parsePluginPath } from './plugin-utils';
 import { ZUPA_DIR } from '../zupa-dir';
@@ -81,7 +80,7 @@ export class PluginWrapper extends ProjectAware {
 			}
 		}
 
-		if (isArray(pluginImport) && pluginImport.length > 0) {
+		if (Array.isArray(pluginImport) && pluginImport.length > 0) {
 			const { id, path } = parsePluginPath(pluginImport[0]);
 			return {
 				id,

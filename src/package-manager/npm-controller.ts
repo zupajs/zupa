@@ -48,7 +48,7 @@ export class NpmController {
 			return;
 		}
 
-		logger.info(`Install missing packages: ${packages.map(p => p.alias)}`)
+		logger.info(`Install missing packages`, packages.map(p => p.alias).join('\n'))
 
 		const args = [];
 

@@ -31,6 +31,7 @@ function printOut(logRecords: LogRecord[], logLevel: string): void {
 	catch (error: any) {
 		// TODO 17-Sep-2021/zslengyel: ink catches all errors and wraps, prints them.
 		// SO main catch in index.ts cannot catch it
+		// TODO 20-Sep-2021/zslengyel: use https://www.npmjs.com/package/pretty-error
 
 		logUpdate.stderr('FATAL', error)
 	}

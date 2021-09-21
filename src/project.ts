@@ -4,6 +4,7 @@ import { RequireHelper } from './plugin/require-helper';
 import { Project as ZupaProject } from '../zupa'
 import { TaskRegistry } from './tasks/task-registry';
 import { ProjectCache } from './cache/project-cache';
+import { GitIgnoreManager } from './package-manager/git-ignore.manager';
 
 export class Project extends PluginWrapper implements ZupaProject {
 
@@ -11,6 +12,7 @@ export class Project extends PluginWrapper implements ZupaProject {
 	private _taskRegistry = new TaskRegistry();
 	public readonly requireHelper = new RequireHelper(this);
 	public readonly cache = new ProjectCache(this);
+	protected readonly gitIgnoreManager = new GitIgnoreManager(this.pluginPath);
 
 	constructor(
 		pluginAccess: string,
@@ -25,7 +27,9 @@ export class Project extends PluginWrapper implements ZupaProject {
 			await this.requirePlugin(new PluginWrapper(
 				this,
 				'@zupa/core-plugins/core-plugins.js'
-			))
+			));
+
+			await this.gitIgnoreManager.updateGitIgnore();
 		})
 	}
 

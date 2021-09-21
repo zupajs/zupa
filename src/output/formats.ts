@@ -129,6 +129,9 @@ export function formatLogRecord(logRecord: LogRecord, logLevel: string): string 
 		}
 
 		const formattedData = JSON.stringify(logRecord.data, null, 0);
+
+		console.log('DATA', logRecord.data)
+
 		return `${baseMessage}\n${formattedData}`
 	}
 	return baseMessage;
