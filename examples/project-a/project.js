@@ -54,7 +54,9 @@ project(({
 			})
 			.dependsOn(yoo, yoo2)
 
-		task('error')
+		task('inline_task', () => {
+
+		})
 
 	})
 

@@ -1,7 +1,9 @@
-import { Async, OutputTransform, Task, TaskConfiguration } from '../../zupa';
+import { Async, OutputTransform, Task, TaskConfiguration, TaskHandler } from '../../zupa';
 import minimist from 'minimist';
 import { configStore } from '../config/config';
 import { logger } from '../log';
+
+const TASK_NAME_REGEXP = /^(([a-z])+([a-z0-9_.:])*)$/i;
 
 class TaskImpl<R = unknown> implements Task<R> {
 
@@ -12,6 +14,9 @@ class TaskImpl<R = unknown> implements Task<R> {
 	private _outputTransform: OutputTransform = 'raw';
 
 	constructor(private _name: string) {
+		if (!TASK_NAME_REGEXP.test(this._name)) {
+			throw new Error(`Task name must match regexp: ${TASK_NAME_REGEXP}. Got: "${this._name}"`)
+		}
 	}
 
 	get outputTransform() {
@@ -87,16 +92,23 @@ export class TaskRegistry {
 		return this._tasks;
 	}
 
-	get(name: string): Task {
+	get(name: string, handler?: TaskHandler): Task {
+		let task: Task;
+
 		if (this.tasks.has(name)) {
+			task = this.tasks.get(name)!;
+		}
+		else {
 			// Map interface does not support generics, TypeScript does not recognize
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			return this.tasks.get(name)!;
+			task = new TaskImpl(name);
+
+			this.tasks.set(name, task)
 		}
 
-		const task = new TaskImpl(name);
-
-		this.tasks.set(name, task)
+		if (handler) {
+			task.handle(handler);
+		}
 
 		return task;
 	}

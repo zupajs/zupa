@@ -13,6 +13,8 @@ export interface TaskConfiguration {
 
 export type OutputTransform = 'json' | 'raw' | 'table' | 'tree' | string;
 
+export type TaskHandler<R = Result, Result = unknown> = (...depResults: any[]) => Async<R>;
+
 export interface Task<Result = unknown> {
 	name: string;
 	invoked: boolean;
@@ -21,7 +23,7 @@ export interface Task<Result = unknown> {
 
 	invoke(force?: boolean): Async<any>;
 
-	handle<R = Result>(handler: (...depResults: any[]) => Async<R>): Task<R>;
+	handle<R = Result>(handler: TaskHandler<R, Result>): Task<R>;
 
 	dependsOn(...depTasks: Task[]): Task;
 

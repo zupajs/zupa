@@ -7,7 +7,7 @@ import {
 	PluginImports,
 	PluginOptions,
 	ProjectBuilder,
-	ProjectContext,
+	ProjectContext, TaskHandler,
 	TasksBuilder,
 	ValueProvider
 } from '../../zupa';
@@ -235,8 +235,8 @@ export class PluginWrapper extends ProjectAware {
 
 		const commandBuildings = commandsBuilders.map(async taskBuilder => {
 
-			const task = (name: string) => {
-				return this.project.taskRegistry.get(name)
+			const task = (name: string, handler?: TaskHandler) => {
+				return this.project.taskRegistry.get(name, handler);
 			}
 
 			return taskBuilder.apply(null, [task]);
